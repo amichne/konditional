@@ -13,14 +13,9 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
  * Example usage:
  * ```kotlin
  * rule {
- *     locales(AppLocale.UNITED_STATES, AppLocale.CANADA)
- *     platforms(Platform.IOS, Platform.ANDROID)
- *     versions {
- *         min(1, 2, 0)
- *         max(2, 0, 0)
- *     }
- *     rampUp {  RampUp.create(50.0) }
- *     note("RampUp to mobile users only")
+ *     match(environment.oneOf(PRODUCTION))
+ *     rampUp { 50 }
+ *     note("Gradual rollout")
  * }
  * ```
  *

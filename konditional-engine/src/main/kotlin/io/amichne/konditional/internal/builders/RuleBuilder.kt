@@ -3,18 +3,14 @@
 package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.LocaleTag
-import io.amichne.konditional.context.PlatformTag
 import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.fact.FactExpression
 import io.amichne.konditional.core.dsl.KonditionalDsl
-import io.amichne.konditional.core.dsl.VariantDispatchHost
-import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.RuleScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.NarrowingTargetingScope
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.id.StableId
-import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.values.RuleId
@@ -33,33 +29,19 @@ import io.amichne.konditional.values.RuleId
 @Suppress("TooManyFunctions", "OVERRIDE_DEPRECATION")
 internal class RuleBuilder<C : Context>(
     private val ruleId: RuleId = RuleId.unspecified,
-    private val leaves: MutableList<Targeting<C>> = mutableListOf(),
 ) : RuleScope<C>,
-    NarrowingTargetingScope<C>,
-    VariantDispatchHost by RuleVariantScope(leaves) {
+    NarrowingTargetingScope<C> {
+    private val leaves = mutableListOf<Targeting<C>>()
     private var note: String? = null
     private var rampUp: RampUp? = null
     private val allowlist = linkedSetOf<HexId>()
 
-    override fun locales(vararg appLocales: LocaleTag) {
-        if (appLocales.isNotEmpty())
-            leaves += Targeting.locale(appLocales.mapTo(linkedSetOf()) { it.id })
-    }
-
-    override fun platforms(vararg ps: PlatformTag) {
-        if (ps.isNotEmpty())
-            leaves += Targeting.platform(ps.mapTo(linkedSetOf()) { it.id })
-    }
-
-    override fun versions(build: VersionRangeScope.() -> Unit) {
-        val range = VersionRangeBuilder().apply(build).build()
-        leaves += Targeting.version(range)
+    override fun match(expression: FactExpression) {
+        leaves += Targeting.Facts(expression)
     }
 
     override fun anyOf(build: AnyOfScope<C>.() -> Unit) {
-        val anyOfBuilder = AnyOfBuilder<C>().apply(build)
-        val node = anyOfBuilder.build()
-        if (node.targets.isNotEmpty()) leaves += node
+        leaves += AnyOfBuilder<C>().apply(build).build()
     }
 
     /**

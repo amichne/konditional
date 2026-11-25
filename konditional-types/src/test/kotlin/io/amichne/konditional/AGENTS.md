@@ -6,7 +6,7 @@ This file scopes `konditional-types/src/test/kotlin/io/amichne/konditional/` and
 Top-level foundational-type tests grouped by context, parse-result behavior, and leaf-type semantics.
 
 ## Go Deeper
-- `context/`: Context composition, stable-id, version, and axis tests.
+- `context/`: Fact expression, schema resolution, and stable identity tests.
 - `core/`: Parse-result and typed-failure tests.
 - `types/`: Leaf-type and context-factory regression tests.
 

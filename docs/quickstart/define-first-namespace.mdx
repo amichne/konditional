@@ -11,28 +11,27 @@ For the standalone example, put these declarations in `src/main/kotlin/Eligibili
 
 ```kotlin
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.axis.AxisValue
-import io.amichne.konditional.context.axis.axes
+import io.amichne.konditional.context.fact.FactDomain
+import io.amichne.konditional.context.fact.FactSchema
+import io.amichne.konditional.context.fact.Facts
+import io.amichne.konditional.context.fact.SingleFact
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.rules.targeting.scopes.constrain
 
-enum class Product : AxisValue<Product> { PAYMENTS, LENDING, REPORTING, SAVINGS }
+enum class Product { PAYMENTS, LENDING, REPORTING, SAVINGS }
 enum class ProductEligibility { NOT_ELIGIBLE, ELIGIBLE, MANUAL_REVIEW }
 
+val productKind = SingleFact("checkout.product", FactDomain.enumeration(Product.entries) { it.name })
+
 data class CommerceContext(val product: Product) : Context {
-    override val axes = axes(product)
+    override val facts = Facts.of(productKind.value(product))
 }
 
-object EligibilityFlags : Namespace("eligibility") {
+object EligibilityFlags : Namespace("eligibility", factSchema = FactSchema(productKind)) {
     val productEligibility by enum<ProductEligibility, CommerceContext>(
         default = ProductEligibility.NOT_ELIGIBLE,
     ) {
-        rule(ProductEligibility.ELIGIBLE) {
-            constrain(Product.PAYMENTS, Product.REPORTING)
-        }
-        rule(ProductEligibility.MANUAL_REVIEW) {
-            constrain(Product.LENDING)
-        }
+        rule(ProductEligibility.ELIGIBLE, productKind.oneOf(Product.PAYMENTS, Product.REPORTING))
+        rule(ProductEligibility.MANUAL_REVIEW, productKind.oneOf(Product.LENDING))
     }
 }
 ```

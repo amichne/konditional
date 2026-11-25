@@ -8,7 +8,6 @@ Top-level engine test packages grouped by invariant.
 ## Go Deeper
 - `core/`: Namespace behavior and deterministic evaluation tests.
 - `engine/`: Runtime snapshot behavior tests.
-- `rules/`: Rule and version semantics tests.
 - `runtime/`: Explicit atomicity regression tests.
 
 ## Rules

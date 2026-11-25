@@ -5,7 +5,6 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.axis.KonditionalExplicitId
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
 import io.amichne.konditional.core.dsl.rules.NamespaceRuleSet
@@ -88,7 +87,7 @@ fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.ruleSet(
  * Use this when you want contravariant rule sets but prefer value-based
  * type selection at the call site:
  * ```kotlin
- * val global = feature.ruleSet(Context::class) { rule(value) { ios() } }
+ * val global = feature.ruleSet(Context::class) { rule(value) { match(environment.oneOf(PRODUCTION)) } }
  * ```
  */
 @JvmName("ruleSetWithContextType")
@@ -109,7 +108,7 @@ fun <T : Any, C, M : Namespace, RC : Context> Feature<T, C, M>.ruleSet(
  * Prefer this when you want contravariant context composition and a terse
  * call site:
  * ```kotlin
- * val global = feature.ruleSet<Context> { rule(value) { ios() } }
+ * val global = feature.ruleSet<Context> { rule(value) { match(environment.oneOf(PRODUCTION)) } }
  * ```
  */
 inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ruleSet(
@@ -128,7 +127,7 @@ inline fun <reified RC : Context, T : Any, C, M : Namespace> Feature<T, C, M>.ru
  * This API is delegate-first:
  * ```kotlin
  * private val sharedCheckout by ruleSet<CheckoutVariant, CommerceContext, Namespace> {
- *     rule(CheckoutVariant.IOS_LOCAL) { ios() }
+ *     rule(CheckoutVariant.IOS_LOCAL) { match(environment.oneOf(PRODUCTION)) }
  * }
  * ```
  * The seed used for deterministic [RuleId] generation is derived from the delegated property name.
@@ -175,6 +174,11 @@ internal fun <T : Any, RC : Context, C, M : Namespace> M.namespaceRuleSetDelegat
             )
         },
     )
+
+/** Pins a namespace rule set's identity across property renames. */
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class KonditionalExplicitId(val id: String)
 
 /**
  * Delegate used by namespace-scoped reusable rule-set declarations.

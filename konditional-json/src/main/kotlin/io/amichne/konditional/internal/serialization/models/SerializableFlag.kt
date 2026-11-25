@@ -14,7 +14,6 @@ import io.amichne.konditional.core.result.parseFailure
 import io.amichne.konditional.core.schema.CompiledNamespaceSchema
 import io.amichne.konditional.internal.SerializedFlagDefinitionMetadata
 import io.amichne.konditional.internal.SerializedFlagRuleSpec
-import io.amichne.konditional.internal.SerializedRuleValueType
 import io.amichne.konditional.internal.flagDefinitionFromSerialized
 import io.amichne.konditional.internal.toSerializedMetadata
 import io.amichne.konditional.internal.toSerializedRules
@@ -94,19 +93,10 @@ internal data class SerializableFlag(
         val decodedDefault = defaultValue.extractValue(expected).getOrElse { return Result.failure(it) }
         val ruleSpecs: List<SerializedFlagRuleSpec<T>> = rules.mapIndexed { index, rule ->
             val fallbackId = RuleId.forFeatureRule(declaration.feature.id, index)
-            when (rule.type) {
-                SerializedRuleValueType.STATIC -> {
-                    val value = rule.value.extractValue(expected).getOrElse { return Result.failure(it) }
-                    rule.toSpec(value = value, fallbackRuleId = fallbackId)
-                }
-                SerializedRuleValueType.CONTEXTUAL -> return parseFailure(
-                    ParseError.invalidSnapshot(
-                        "Feature '$key' rule '${rule.ruleId ?: fallbackId}' is contextual and cannot be restored from JSON",
-                    ),
-                )
-            }
+            val value = rule.value.extractValue(expected).getOrElse { return Result.failure(it) }
+            rule.toSpec(value = value, fallbackRuleId = fallbackId)
         }
-        val definition = flagDefinitionFromSerialized(
+        return flagDefinitionFromSerialized(
             feature = declaration.feature,
             defaultValue = decodedDefault,
             metadata = SerializedFlagDefinitionMetadata(
@@ -116,6 +106,5 @@ internal data class SerializableFlag(
             ),
             rules = ruleSpecs,
         )
-        return Result.success(definition)
     }
 }

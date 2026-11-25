@@ -78,12 +78,12 @@
       "definition": "The input a caller supplies to evaluate a feature.",
       "scope": "Konditional's shared types.",
       "example": "CommerceContext identifies the product in a checkout request.",
-      "distinction": "An axis describes one dimension of a context.",
+      "distinction": "A fact describes one input in a context.",
       "usage": [
         {
-          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-types/src/main/kotlin/io/amichne/konditional/context/Context.kt",
+          "url": "https://github.com/amichne/konditional/blob/6666fe361d0f8d397ef613aa18e17a07c7d1751b/konditional-types/src/main/kotlin/io/amichne/konditional/context/Context.kt",
           "locator": "Context",
-          "examined": "2026-11-24",
+          "examined": "2026-11-25",
           "meaning": "The input a caller supplies to evaluate a feature."
         }
       ],
@@ -95,61 +95,61 @@
       ],
       "justification": "The Context declaration names this concept.",
       "related": [
-        "axis"
+        "fact"
       ],
       "rejectedForms": []
     },
     {
-      "id": "axis",
-      "term": "axis",
-      "definition": "A targeting dimension with a defined set of values.",
+      "id": "fact",
+      "term": "fact",
+      "definition": "A namespace's declaration of a typed input that a rule can inspect.",
       "scope": "Konditional's shared types.",
-      "example": "A product axis groups payments, lending, and reporting.",
-      "distinction": "An axis value selects one member of that set.",
+      "example": "A warehouse declares the temperature in degrees Celsius as an ordered fact.",
+      "distinction": "The context supplies a value for the declared fact.",
       "usage": [
         {
-          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-types/src/main/kotlin/io/amichne/konditional/context/axis/Axis.kt",
-          "locator": "Axis",
-          "examined": "2026-11-24",
-          "meaning": "A targeting dimension with a defined set of values."
+          "url": "https://github.com/amichne/konditional/blob/6666fe361d0f8d397ef613aa18e17a07c7d1751b/konditional-types/src/main/kotlin/io/amichne/konditional/context/fact/Fact.kt",
+          "locator": "Fact",
+          "examined": "2026-11-25",
+          "meaning": "A namespace's declaration of a typed input that a rule can inspect."
         }
       ],
       "localSources": [
         {
-          "path": "konditional-types/src/main/kotlin/io/amichne/konditional/context/axis/Axis.kt",
-          "locator": "Axis"
+          "path": "konditional-types/src/main/kotlin/io/amichne/konditional/context/fact/Fact.kt",
+          "locator": "Fact"
         }
       ],
-      "justification": "The Axis declaration names this concept.",
+      "justification": "The Fact declaration defines the input shared by comparisons.",
       "related": [
-        "axis-value"
+        "fact-value"
       ],
       "rejectedForms": []
     },
     {
-      "id": "axis-value",
-      "term": "axis value",
-      "definition": "An enum entry that identifies one value on an axis.",
+      "id": "fact-value",
+      "term": "fact value",
+      "definition": "A typed assignment to a declared fact in an evaluation context.",
       "scope": "Konditional's shared types.",
-      "example": "Product.PAYMENTS identifies the payments product.",
-      "distinction": "The axis groups all values of the enum.",
+      "example": "A delivery context supplies four degrees Celsius for its temperature.",
+      "distinction": "The fact declares the domain for that assignment.",
       "usage": [
         {
-          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-types/src/main/kotlin/io/amichne/konditional/context/axis/AxisValue.kt",
-          "locator": "AxisValue",
-          "examined": "2026-11-24",
-          "meaning": "An enum entry that identifies one value on an axis."
+          "url": "https://github.com/amichne/konditional/blob/6666fe361d0f8d397ef613aa18e17a07c7d1751b/konditional-types/src/main/kotlin/io/amichne/konditional/context/fact/Facts.kt",
+          "locator": "FactValue",
+          "examined": "2026-11-25",
+          "meaning": "A typed assignment to a declared fact in an evaluation context."
         }
       ],
       "localSources": [
         {
-          "path": "konditional-types/src/main/kotlin/io/amichne/konditional/context/axis/AxisValue.kt",
-          "locator": "AxisValue"
+          "path": "konditional-types/src/main/kotlin/io/amichne/konditional/context/fact/Facts.kt",
+          "locator": "FactValue"
         }
       ],
-      "justification": "The AxisValue declaration names this concept.",
+      "justification": "The FactValue declaration pairs a fact with its supplied values.",
       "related": [
-        "axis"
+        "fact"
       ],
       "rejectedForms": []
     },

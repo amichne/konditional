@@ -5,7 +5,7 @@ title: "Evaluation diagnostics"
 `explain(context)` returns the value and the decision for one evaluation. Use the decision to distinguish a default from a matching rule.
 
 ```kotlin
-val result = CheckoutFlags.productEligibility.explain(CommerceContext(Product.PAYMENTS))
+val result = EligibilityFlags.productEligibility.explain(CommerceContext(Product.PAYMENTS))
 println(result.value)
 println(result.decision)
 ```
@@ -43,8 +43,7 @@ wrapper with:
 - `rule`: the structured rule explanation
 - `bucket`: the `BucketInfo` used for rollout reasoning
 
-The rule explanation includes rollout, locale, platform, version, axis, and
-specificity metadata so you can inspect the matched path without re-running the
-rule logic manually.
+The matched rule includes its `RuleId`, rollout, specificity, and targeting tree.
+A `TargetingNode.Facts` node identifies the fact expression with its operators, stable fact identifiers, and operands.
 
 Use `evaluate` when the caller only needs the typed feature value.

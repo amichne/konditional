@@ -9,13 +9,13 @@ import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 
 /**
  * Exports the namespace configuration.
- * @throws KonditionalBoundaryFailure if the snapshot cannot preserve a rule's targeting conditions.
+ * @throws KonditionalBoundaryFailure if a rule uses a code-only predicate or contextual value resolver.
  */
 fun Namespace.toJson(): String = ConfigurationCodec.encode(this)
 
 /**
  * Loads a complete snapshot after checking each value against its declared feature.
- * A contextual rule has no restorable resolver in JSON and yields [io.amichne.konditional.core.result.ParseError.InvalidSnapshot].
+ * Resolves every fact reference and operand against this namespace before installation.
  * A failed decode leaves the active configuration intact.
  */
 fun Namespace.fromJson(json: String): ParseResult<Configuration> =

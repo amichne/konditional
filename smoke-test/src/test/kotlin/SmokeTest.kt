@@ -1,39 +1,40 @@
 import io.amichne.konditional.api.evaluate
-import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Version
+import io.amichne.konditional.context.fact.FactDomain
+import io.amichne.konditional.context.fact.FactSchema
+import io.amichne.konditional.context.fact.Facts
+import io.amichne.konditional.context.fact.SingleFact
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.serialization.fromJson
 import io.amichne.konditional.serialization.toJson
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class SmokeTest {
-    object Flags : Namespace("smoke") {
-        val enabled by boolean<Context>(default = false) {
-            rule(true) { platforms(Platform.IOS) }
-        }
-    }
+    private enum class Platform { IOS, ANDROID }
 
     @Test
     fun fullLifecycle() {
-        val context = Context(
-            locale = AppLocale.UNITED_STATES,
-            platform = Platform.IOS,
-            appVersion = Version.of(1, 0, 0),
-            stableId = StableId.of("user-1"),
-        )
+        val platform = SingleFact("client.os", FactDomain.enumeration(Platform.entries) { it.name })
+        val flags = object : Namespace("smoke", factSchema = FactSchema(platform)) {
+            val enabled by boolean<Context>(default = false) {
+                rule(true, platform.oneOf(Platform.IOS))
+            }
+        }
+        fun device(os: Platform) = object : Context {
+            override val facts = Facts.of(platform.value(os))
+        }
 
-        assertTrue(Flags.enabled.evaluate(context))
+        assertTrue(flags.enabled.evaluate(device(Platform.IOS)))
 
-        val json = Flags.toJson()
-        val result = Flags.fromJson(json)
+        val json = flags.toJson()
+        val result = flags.fromJson(json)
 
         assertIs<ParseResult.Success<*>>(result)
-        assertTrue(Flags.enabled.evaluate(context))
+        assertTrue(flags.enabled.evaluate(device(Platform.IOS)))
+        assertFalse(flags.enabled.evaluate(device(Platform.ANDROID)))
     }
 }

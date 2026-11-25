@@ -9,10 +9,6 @@ Mutable builder implementations that assemble immutable rules and flag definitio
 - `AnyOfBuilder.kt`
 - `FlagBuilder.kt`
 - `RuleBuilder.kt`
-- `RuleVariantScope.kt`
-
-## Go Deeper
-- `versions/`: Version-range builder state.
 
 ## Rules
 - Builder mutation is an implementation detail; emitted rule and flag models must remain deterministic and immutable.

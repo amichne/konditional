@@ -6,7 +6,8 @@ import io.amichne.konditional.api.BucketInfo
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.RampUp
 import io.amichne.konditional.core.ops.Metrics
-import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.context.fact.FactSpec
+import io.amichne.konditional.values.RuleId
 
 /**
  * Internal diagnostics snapshot for a single evaluation.
@@ -126,140 +127,26 @@ data class EvaluationDiagnostics<T : Any>(
     sealed interface RuleDetails {
         val note: String?
         val rollout: RampUp
-        val locales: Set<String>
-        val platforms: Set<String>
-        val versionRange: VersionRange
-        val axes: Map<String, Set<String>>
-        val baseSpecificity: Int
-        val extensionSpecificity: Int
+        val targeting: TargetingNode
         val totalSpecificity: Int
-        val extensionClassName: String?
-        val ruleId: String
-        val extensionNode: ExtensionNode
-        val conditionalContextNode: ConditionalContextNode
+        val ruleId: RuleId
     }
 
-    /**
-     * Classifies whether rule targeting included a custom extension predicate.
-     */
-    enum class ExtensionType {
-        NONE,
-        LAMBDA,
-    }
-
-    /**
-     * Classifies whether rule targeting narrowed the context through guarded predicates.
-     */
-    enum class ConditionalContextType {
-        NONE,
-        NARROWING,
-    }
-
-    /**
-     * Deterministic structural view of rule targeting criteria.
-     *
-     * Guarantees:
-     * - Nodes preserve evaluation-relevant targeting structure without executing predicates.
-     * - Collections and child ordering must remain stable for a fixed rule definition.
-     */
+    /** Structural explanation of the rule's criteria. Kotlin predicates remain opaque. */
     sealed interface TargetingNode {
-        /**
-         * Conjunction of child targeting predicates.
-         */
-        data class All(
-            val children: List<TargetingNode>,
-        ) : TargetingNode
-
-        /**
-         * Disjunction of child targeting predicates.
-         */
-        data class AnyOf(
-            val children: List<TargetingNode>,
-        ) : TargetingNode
-
-        /**
-         * Locale filter with the accepted locale identifiers.
-         */
-        data class Locale(
-            val ids: Set<String>,
-        ) : TargetingNode
-
-        /**
-         * Platform filter with the accepted platform identifiers.
-         */
-        data class Platform(
-            val ids: Set<String>,
-        ) : TargetingNode
-
-        /**
-         * Version-range filter.
-         */
-        data class Version(
-            val range: VersionRange,
-        ) : TargetingNode
-
-        /**
-         * Axis filter keyed by axis identifier.
-         */
-        data class Axis(
-            val axisId: String,
-            val allowedIds: Set<String>,
-        ) : TargetingNode
-
-        /**
-         * Marker node for custom extension predicates whose internals are intentionally opaque.
-         */
+        data class All(val children: List<TargetingNode>) : TargetingNode
+        data class AnyOf(val children: List<TargetingNode>) : TargetingNode
+        data class Facts(val expression: FactSpec) : TargetingNode
         data object Custom : TargetingNode
-
-        /**
-         * Wrapper for targeting evaluated after a conditional-context narrowing step.
-         */
-        data class Guarded(
-            val child: TargetingNode,
-        ) : TargetingNode
+        data class Guarded(val child: TargetingNode) : TargetingNode
     }
 
-    /**
-     * Diagnostics node describing extension predicate participation for a rule.
-     */
-    data class ExtensionNode(
-        val type: ExtensionType,
-        val content: TargetingNode? = null,
-    )
-
-    /**
-     * Diagnostics node describing conditional-context narrowing participation for a rule.
-     */
-    data class ConditionalContextNode(
-        val type: ConditionalContextType,
-        val content: TargetingNode? = null,
-    )
-
-    /**
-     * Deterministic explanation of a rule definition as seen by diagnostics consumers.
-     *
-     * Guarantees:
-     * - Captures only trusted rule metadata derived from the Kotlin rule model.
-     * - Does not evaluate custom predicates; opaque extensions are represented structurally through [extensionNode].
-     * - [ruleId] is a deterministic identifier derived from namespace, feature key, and stable rule ordinal.
-     *
-     * Performance notes:
-     * - All fields are eagerly materialized when diagnostics are created to keep downstream consumers allocation-light.
-     */
+    /** Structural criteria and identity of the winning or rollout-excluded rule. */
     data class RuleExplanation(
         override val note: String?,
         override val rollout: RampUp,
-        override val locales: Set<String>,
-        override val platforms: Set<String>,
-        override val versionRange: VersionRange,
-        override val axes: Map<String, Set<String>>,
-        override val baseSpecificity: Int,
-        override val extensionSpecificity: Int,
+        override val targeting: TargetingNode,
         override val totalSpecificity: Int,
-        override val extensionClassName: String?,
-        override val ruleId: String,
-        override val extensionNode: ExtensionNode = ExtensionNode(ExtensionType.NONE),
-        override val conditionalContextNode: ConditionalContextNode =
-            ConditionalContextNode(ConditionalContextType.NONE),
+        override val ruleId: RuleId,
     ) : RuleDetails
 }

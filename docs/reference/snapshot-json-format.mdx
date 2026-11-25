@@ -2,38 +2,36 @@
 title: "Snapshot JSON format"
 ---
 
-`Namespace.toJson()` exports a namespace snapshot as one JSON object with an
-optional `meta` section and a required `flags` array.
+`Namespace.toJson()` exports a versioned envelope. The `snapshot` object holds the flags and optional metadata.
+The receiving namespace supplies the fact schema.
 
 ## Top-level shape
 
-This example describes one enum feature in the checkout namespace.
+This snapshot describes one Boolean feature from the [warehouse example](/concepts/context-and-facts).
 
 ```json
 {
-  "meta": {
-    "version": "v1",
-    "generatedAtEpochMillis": 1735689600000,
-    "source": "control-plane"
-  },
-  "flags": [
-    {
-      "key": "feature::checkout::productEligibility",
-      "defaultValue": {
-        "type": "ENUM",
-        "value": "ELIGIBLE",
-        "enumClassName": "com.example.ProductEligibility"
-      },
-      "salt": "v1",
-      "isActive": true,
-      "rampUpAllowlist": [],
-      "rules": []
-    }
-  ]
+  "format": "konditional/facts-v1",
+  "snapshot": {
+    "flags": [{
+      "key": "feature::warehouse::acceptDelivery",
+      "defaultValue": { "type": "BOOLEAN", "value": false },
+      "rules": [{
+        "value": { "type": "BOOLEAN", "value": true },
+        "conditions": [{
+          "all": [
+            { "oneOf": { "fact": "warehouse.zone", "operands": ["COLD_STORAGE"] } },
+            { "atMost": { "fact": "warehouse.celsius", "operand": "4" } }
+          ]
+        }]
+      }]
+    }]
+  }
 }
 ```
 
-`meta` is omitted when all metadata fields are null.
+The optional `meta` object accepts `version`, `generatedAtEpochMillis`, and `source`.
+Use `konditional/facts-v1` for the format identifier.
 
 ## Flag entries
 
@@ -70,18 +68,19 @@ Each rule entry can carry these fields.
 | Field | Meaning |
 | --- | --- |
 | `value` | Typed envelope for the rule value |
-| `type` | Static or contextual rule value type |
 | `ruleId` | Optional serialized rule identifier |
 | `rampUp` | Rollout percentage as a `Double` |
 | `rampUpAllowlist` | Stable IDs that bypass rule ramp-up gating |
 | `note` | Optional human note |
-| `locales` | Allowed locale identifiers |
-| `platforms` | Allowed platform identifiers |
-| `versionRange` | Serialized version-range object |
-| `axes` | Map of axis ID to allowed value IDs |
+| `conditions` | Required ordered array of expressions. Every condition must match. An empty array matches any context. |
 
-If a rule contains an anonymous predicate, an `anyOf` group, or another condition the flat fields cannot preserve,
-`toJson()` throws `KonditionalBoundaryFailure` with `ParseError.InvalidSnapshot`. The error identifies the feature and rule.
+Snapshot rules contain static values and portable fact expressions.
+If a rule uses a Kotlin predicate or a contextual value resolver, `toJson()` throws `KonditionalBoundaryFailure` with `ParseError.InvalidSnapshot`.
+The error identifies the feature and rule.
 
-A `CONTEXTUAL` value comes from a Kotlin resolver. The snapshot records the rule but cannot recreate its resolver.
-`fromJson()` returns `ParseError.InvalidSnapshot` for a snapshot containing such a rule. The namespace keeps its previous configuration.
+## Portable fact expressions
+
+`all` and `anyOf` contain ordered arrays of expressions.
+`oneOf` accepts a list of operands. Each inclusive comparison, `atLeast` or `atMost`, accepts one operand.
+The receiving namespace resolves each fact identifier and parses its operands in that fact's domain.
+An unknown fact, unsupported comparison, or invalid operand rejects the entire import.
