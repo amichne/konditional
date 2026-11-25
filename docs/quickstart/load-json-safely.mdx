@@ -1,35 +1,27 @@
 ---
 title: "Load JSON safely"
-description: "Use a snapshot to update the rules of an existing namespace."
 ---
 
-This example
-uses `CheckoutFlags` from [the first flag](/quickstart). With the
-[local build included](/quickstart/install), add the JSON module to your dependencies.
+For the [standalone application](/guides/standalone-checkout#add-json-support), add the versioned JSON dependency. If your application uses the [included build](/quickstart/install), add `implementation("io.github.amichne:konditional-json")`. Use the [eligibility namespace](/quickstart/define-first-namespace) for this check. Create `src/main/kotlin/Snapshots.kt`.
 
-```kotlin
-implementation("io.github.amichne:konditional-json")
-```
-
-## Export and reload the checkout rules
-
-Export the namespace to get JSON that matches its declared flags.
-`fromJson` checks the full snapshot before it applies the update.
+Export the checkout configuration with `toJson()`. On import, `fromJson` loads the decoded configuration or returns a typed error. A failed import keeps the active configuration.
 
 ```kotlin
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.serialization.fromJson
 import io.amichne.konditional.serialization.toJson
 
-fun reloadCheckout() {
-    val json = CheckoutFlags.toJson()
-    when (val result = CheckoutFlags.fromJson(json)) {
-        is ParseResult.Success -> println("Loaded checkout rules")
-        is ParseResult.Failure -> println(result.error.message)
-    }
+fun checkSnapshots() {
+    val json = EligibilityFlags.toJson()
+    val loaded = EligibilityFlags.fromJson(json)
+    check(loaded is ParseResult.Success)
+    check(EligibilityFlags.toJson() == json)
+
+    val before = EligibilityFlags.currentSnapshot
+    val rejected = EligibilityFlags.fromJson("{ not-json")
+    check(rejected is ParseResult.Failure)
+    check(EligibilityFlags.currentSnapshot == before)
 }
 ```
 
-Malformed JSON returns `ParseResult.Failure`. Callers continue to evaluate
-flags with the previous configuration. To load a snapshot fetched by your
-application, see [Remote configuration](/guides/remote-configuration).
+[Run the examples](/quickstart/verify-behavior).

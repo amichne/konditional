@@ -1,0 +1,358 @@
+{
+  "type": "GLOSSARY",
+  "schemaVersion": 1,
+  "domain": "Konditional's Kotlin feature-flag API",
+  "review": {
+    "type": "PROVISIONAL",
+    "reason": "Based on the public Kotlin declarations. Independent reader review is pending."
+  },
+  "scope": {
+    "root": "../..",
+    "include": [
+      "README.md",
+      "CONTRIBUTING.md",
+      "docs/**/*.mdx"
+    ],
+    "exclude": [
+      "docs/appendix/glossary.mdx"
+    ]
+  },
+  "entries": [
+    {
+      "id": "namespace",
+      "term": "namespace",
+      "definition": "A group of declared features with an identifier and a registry.",
+      "scope": "Konditional's engine.",
+      "example": "CheckoutFlags owns productEligibility.",
+      "distinction": "The registry holds the state used to evaluate the declarations.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-engine/src/main/kotlin/io/amichne/konditional/core/Namespace.kt",
+          "locator": "Namespace",
+          "examined": "2026-11-24",
+          "meaning": "A group of declared features with an identifier and a registry."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-engine/src/main/kotlin/io/amichne/konditional/core/Namespace.kt",
+          "locator": "Namespace"
+        }
+      ],
+      "justification": "The Namespace declaration names this concept.",
+      "related": [
+        "namespace-registry"
+      ],
+      "rejectedForms": []
+    },
+    {
+      "id": "feature",
+      "term": "feature",
+      "definition": "A typed handle that belongs to one namespace and accepts a specific context type.",
+      "scope": "Konditional's engine.",
+      "example": "productEligibility returns a ProductEligibility value.",
+      "distinction": "A rule chooses a value for a feature.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-engine/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt",
+          "locator": "Feature",
+          "examined": "2026-11-24",
+          "meaning": "A typed handle that belongs to one namespace and accepts a specific context type."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-engine/src/main/kotlin/io/amichne/konditional/core/features/Feature.kt",
+          "locator": "Feature"
+        }
+      ],
+      "justification": "The Feature declaration names this concept.",
+      "related": [
+        "rule"
+      ],
+      "rejectedForms": []
+    },
+    {
+      "id": "context",
+      "term": "context",
+      "definition": "The input a caller supplies to evaluate a feature.",
+      "scope": "Konditional's shared types.",
+      "example": "CommerceContext identifies the product in a checkout request.",
+      "distinction": "An axis describes one dimension of a context.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-types/src/main/kotlin/io/amichne/konditional/context/Context.kt",
+          "locator": "Context",
+          "examined": "2026-11-24",
+          "meaning": "The input a caller supplies to evaluate a feature."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-types/src/main/kotlin/io/amichne/konditional/context/Context.kt",
+          "locator": "Context"
+        }
+      ],
+      "justification": "The Context declaration names this concept.",
+      "related": [
+        "axis"
+      ],
+      "rejectedForms": []
+    },
+    {
+      "id": "axis",
+      "term": "axis",
+      "definition": "A targeting dimension with a defined set of values.",
+      "scope": "Konditional's shared types.",
+      "example": "A product axis groups payments, lending, and reporting.",
+      "distinction": "An axis value selects one member of that set.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-types/src/main/kotlin/io/amichne/konditional/context/axis/Axis.kt",
+          "locator": "Axis",
+          "examined": "2026-11-24",
+          "meaning": "A targeting dimension with a defined set of values."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-types/src/main/kotlin/io/amichne/konditional/context/axis/Axis.kt",
+          "locator": "Axis"
+        }
+      ],
+      "justification": "The Axis declaration names this concept.",
+      "related": [
+        "axis-value"
+      ],
+      "rejectedForms": []
+    },
+    {
+      "id": "axis-value",
+      "term": "axis value",
+      "definition": "An enum entry that identifies one value on an axis.",
+      "scope": "Konditional's shared types.",
+      "example": "Product.PAYMENTS identifies the payments product.",
+      "distinction": "The axis groups all values of the enum.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-types/src/main/kotlin/io/amichne/konditional/context/axis/AxisValue.kt",
+          "locator": "AxisValue",
+          "examined": "2026-11-24",
+          "meaning": "An enum entry that identifies one value on an axis."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-types/src/main/kotlin/io/amichne/konditional/context/axis/AxisValue.kt",
+          "locator": "AxisValue"
+        }
+      ],
+      "justification": "The AxisValue declaration names this concept.",
+      "related": [
+        "axis"
+      ],
+      "rejectedForms": []
+    },
+    {
+      "id": "rule",
+      "term": "rule",
+      "definition": "Criteria that determine when a feature can return an associated value.",
+      "scope": "Konditional's engine.",
+      "example": "A rule selects manual review for a lending request.",
+      "distinction": "The feature default applies when no rule qualifies.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-engine/src/main/kotlin/io/amichne/konditional/rules/Rule.kt",
+          "locator": "Rule",
+          "examined": "2026-11-24",
+          "meaning": "Criteria that determine when a feature can return an associated value."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-engine/src/main/kotlin/io/amichne/konditional/rules/Rule.kt",
+          "locator": "Rule"
+        }
+      ],
+      "justification": "The Rule declaration names this concept.",
+      "related": [
+        "feature"
+      ],
+      "rejectedForms": []
+    },
+    {
+      "id": "ramp-up",
+      "term": "ramp-up",
+      "definition": "A percentage threshold that controls which rollout buckets qualify for a rule.",
+      "scope": "Konditional's engine.",
+      "example": "A 25% ramp-up admits the first quarter of the buckets.",
+      "distinction": "The threshold can change while a user's bucket stays fixed.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-engine/src/main/kotlin/io/amichne/konditional/context/RampUp.kt",
+          "locator": "RampUp",
+          "examined": "2026-11-24",
+          "meaning": "A percentage threshold that controls which rollout buckets qualify for a rule."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-engine/src/main/kotlin/io/amichne/konditional/context/RampUp.kt",
+          "locator": "RampUp"
+        }
+      ],
+      "justification": "The RampUp declaration names this concept.",
+      "related": [
+        "rule"
+      ],
+      "rejectedForms": []
+    },
+    {
+      "id": "configuration",
+      "term": "configuration",
+      "definition": "A map of feature definitions and their metadata.",
+      "scope": "Konditional's engine.",
+      "example": "Snapshot metadata can identify the configuration version.",
+      "distinction": "The namespace snapshot also records the kill-switch state.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-engine/src/main/kotlin/io/amichne/konditional/core/instance/Configuration.kt",
+          "locator": "Configuration",
+          "examined": "2026-11-24",
+          "meaning": "A map of feature definitions and their metadata."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-engine/src/main/kotlin/io/amichne/konditional/core/instance/Configuration.kt",
+          "locator": "Configuration"
+        }
+      ],
+      "justification": "The Configuration declaration names this concept.",
+      "related": [
+        "namespace-registry"
+      ],
+      "rejectedForms": []
+    },
+    {
+      "id": "namespace-registry",
+      "term": "namespace registry",
+      "definition": "The component that stores namespace snapshots and handles load, rollback, disable, and enable operations.",
+      "scope": "Konditional's engine.",
+      "example": "The default registry replaces its active snapshot atomically.",
+      "distinction": "The configuration holds feature definitions and metadata.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-engine/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt",
+          "locator": "NamespaceRegistry",
+          "examined": "2026-11-24",
+          "meaning": "The component that stores namespace snapshots and handles load, rollback, disable, and enable operations."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-engine/src/main/kotlin/io/amichne/konditional/core/registry/NamespaceRegistry.kt",
+          "locator": "NamespaceRegistry"
+        }
+      ],
+      "justification": "The NamespaceRegistry declaration names this concept.",
+      "related": [
+        "configuration"
+      ],
+      "rejectedForms": [
+        {
+          "type": "REVIEW",
+          "form": "global registry",
+          "reason": "A custom registry can have a different scope from the default namespace registry.",
+          "evidence": [
+            {
+              "type": "JUSTIFICATION",
+              "text": "Namespace accepts a registry in its constructor and creates an in-memory registry by default."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parse-result",
+      "term": "parse result",
+      "definition": "The success or failure returned by snapshot import.",
+      "scope": "Konditional's shared types.",
+      "example": "A successful import returns the decoded configuration.",
+      "distinction": "A failed result contains a parse error.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-types/src/main/kotlin/io/amichne/konditional/core/result/ParseResult.kt",
+          "locator": "ParseResult",
+          "examined": "2026-11-24",
+          "meaning": "The success or failure returned by snapshot import."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-types/src/main/kotlin/io/amichne/konditional/core/result/ParseResult.kt",
+          "locator": "ParseResult"
+        }
+      ],
+      "justification": "The ParseResult declaration names this concept.",
+      "related": [
+        "parse-error"
+      ],
+      "rejectedForms": []
+    },
+    {
+      "id": "parse-error",
+      "term": "parse error",
+      "definition": "A typed reason for a failed parse.",
+      "scope": "Konditional's shared types.",
+      "example": "InvalidJson identifies malformed JSON.",
+      "distinction": "The parse result carries the error to the caller.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-types/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt",
+          "locator": "ParseError",
+          "examined": "2026-11-24",
+          "meaning": "A typed reason for a failed parse."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-types/src/main/kotlin/io/amichne/konditional/core/result/ParseError.kt",
+          "locator": "ParseError"
+        }
+      ],
+      "justification": "The ParseError declaration names this concept.",
+      "related": [
+        "parse-result"
+      ],
+      "rejectedForms": []
+    },
+    {
+      "id": "konstrained",
+      "term": "Konstrained",
+      "definition": "The Kotlin contract for a custom feature value with a supported wire representation.",
+      "scope": "Konditional's shared types.",
+      "example": "A retry policy implements Konstrained.Object.",
+      "distinction": "An enum feature uses the enum declaration directly.",
+      "usage": [
+        {
+          "url": "https://github.com/amichne/konditional/blob/d763238f500ce14ed750a7477fc624e958cf4873/konditional-types/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt",
+          "locator": "Konstrained",
+          "examined": "2026-11-24",
+          "meaning": "The Kotlin contract for a custom feature value with a supported wire representation."
+        }
+      ],
+      "localSources": [
+        {
+          "path": "konditional-types/src/main/kotlin/io/amichne/konditional/core/types/Konstrained.kt",
+          "locator": "Konstrained"
+        }
+      ],
+      "justification": "The Konstrained declaration names this concept.",
+      "related": [
+        "feature"
+      ],
+      "rejectedForms": []
+    }
+  ]
+}

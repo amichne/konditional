@@ -1,40 +1,15 @@
 ---
-title: "Testing strategies"
-description: "Konditional is easiest to trust when the tests mirror the guarantees you care about in production."
+title: "Tests for a namespace"
 ---
 
-Start with behavioral tests, not only declaration tests.
+Define a small namespace and contexts with known inputs. Cover each behavior that the application uses.
 
-## Test the important invariants
+| Behavior | Assertion |
+| --- | --- |
+| Targeting | A matching context gets the rule value. An unmatched context gets the default. |
+| Rollout | Repeated calls with the same inputs produce the same decision and bucket. |
+| Namespace isolation | Two namespaces can declare the same key and return different values. |
+| JSON rejection | A malformed or mismatched payload returns a failure and preserves the active snapshot. |
+| Concurrent updates | Each reader sees one complete snapshot during a load or rollback. |
 
-The current repo's test suite is a good model for what to cover.
-
-- **Determinism:** the same context and snapshot yield the same result
-- **Namespace isolation:** similar keys in different namespaces do not bleed
-  together
-- **Boundary failure:** malformed or mismatched JSON returns `ParseResult`
-  failures and keeps prior state
-- **Atomicity:** concurrent readers see whole snapshots only
-
-## Keep tests narrow
-
-Most tests can use one tiny namespace defined inside the test and one or two
-small context fixtures. You do not need a large application harness to prove
-these behaviors.
-
-## Useful repo examples
-
-The current suite includes focused examples you can copy mentally.
-
-- `NamespaceBehaviorTest`
-- `NamespaceRuntimeTest`
-- `NamespaceAtomicityTest`
-- `NamespaceJsonTest`
-- `ConfigurationCodecTest`
-
-## Next steps
-
-If you are introducing Konditional into an older string-key system, the last
-guide shows a migration path that keeps those tests useful during rollout.
-
-- [Read the migration guide](/guides/migrating-from-string-flags)
+The [standalone checkout example](/quickstart/verify-behavior) includes runnable assertions. For concurrent readers and writers, see [`NamespaceAtomicityTest`](https://github.com/amichne/konditional/blob/main/konditional-engine/src/test/kotlin/io/amichne/konditional/runtime/NamespaceAtomicityTest.kt).

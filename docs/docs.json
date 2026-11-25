@@ -58,6 +58,7 @@
             "pages": [
               "guides/migrating-from-string-flags",
               "guides/testing-strategies",
+              "guides/standalone-checkout",
               "quickstart/verify-behavior"
             ]
           }

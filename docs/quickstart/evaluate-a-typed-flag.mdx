@@ -1,23 +1,23 @@
 ---
 title: "Use an enum result"
-description: "Select a checkout message for each product eligibility state."
 ---
 
-The [product eligibility flag](/quickstart/define-first-namespace) returns a
-`ProductEligibility`. Use an exhaustive `when` to select the checkout message.
-If you add another enum entry later, the compiler will flag the missing case here.
+Create `src/main/kotlin/Eligibility.kt`. Pass a product context to `evaluate`. The compiler checks the return type against `ProductEligibility`.
 
 ```kotlin
 import io.amichne.konditional.api.evaluate
 
-fun checkoutMessage(product: Product): String {
-    val eligibility = EligibilityFlags.productEligibility.evaluate(CommerceContext(product))
-    return when (eligibility) {
-        ProductEligibility.ELIGIBLE -> "Continue to checkout"
-        ProductEligibility.MANUAL_REVIEW -> "Request a review"
-        ProductEligibility.NOT_ELIGIBLE -> "Checkout unavailable"
+fun eligibility(product: Product): ProductEligibility =
+    EligibilityFlags.productEligibility.evaluate(CommerceContext(product))
+
+fun checkoutRoute(product: Product): String =
+    when (eligibility(product)) {
+        ProductEligibility.ELIGIBLE -> "self-service"
+        ProductEligibility.MANUAL_REVIEW -> "manual review"
+        ProductEligibility.NOT_ELIGIBLE -> "unavailable"
     }
-}
 ```
 
-For `Product.LENDING`, the message is `Request a review`.
+The `when` expression covers every eligibility value. If you add an enum entry, the compiler identifies the missing branch.
+
+For `Product.SAVINGS`, the default produces the route `unavailable`.

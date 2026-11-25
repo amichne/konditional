@@ -1,31 +1,18 @@
 ---
 title: "Glossary"
-description: "This glossary defines the core terms used across the current documentation set."
 ---
-
-## Terms
-
-The definitions here are short on purpose. Each term points back to the model
-used by the current repo.
 
 | Term | Meaning |
 | --- | --- |
-| Namespace | A team-owned container for feature declarations and namespace-local runtime state |
-| Feature | A typed handle bound to a value type, a context type, and a namespace |
-| Context | The runtime input passed to `evaluate(...)` or `explain(...)` |
-| Axis | A descriptor for a domain-specific targeting dimension |
-| Axis value | An enum entry that lives on an axis and can be targeted by rules |
-| Rule | A conditional value assignment paired with targeting criteria |
-| Ramp-up | Gradual rollout based on deterministic bucketing and stable identity |
-| Configuration | Runtime snapshot of flags plus metadata |
-| Namespace registry | Runtime surface for load, rollback, disable, and enable operations |
-| Parse result | The success or failure wrapper returned by the JSON trust boundary |
-| Parse error | Structured failure reason from JSON decoding |
-| Konstrained | Contract for custom values that can round-trip through the JSON layer |
-
-## Next steps
-
-If you need more than a definition, the FAQ answers the most common adoption
-questions and objections directly.
-
-- [Open the FAQ](/appendix/faq)
+| namespace | A group of declared features with an identifier and a registry. |
+| feature | A typed handle that belongs to one namespace and accepts a specific context type. |
+| context | The input a caller supplies to evaluate a feature. |
+| axis | A targeting dimension with a defined set of values. |
+| axis value | An enum entry that identifies one value on an axis. |
+| rule | Criteria that determine when a feature can return an associated value. |
+| ramp-up | A percentage threshold that controls which rollout buckets qualify for a rule. |
+| configuration | A map of feature definitions and their metadata. |
+| namespace registry | The component that stores namespace snapshots and handles load, rollback, disable, and enable operations. |
+| parse result | The success or failure returned by snapshot import. |
+| parse error | A typed reason for a failed parse. |
+| Konstrained | The Kotlin contract for a custom feature value with a supported wire representation. |

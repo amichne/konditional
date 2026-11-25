@@ -1,76 +1,41 @@
 # Contributing to Konditional
 
-Thank you for contributing to Konditional.
+Use JDK 27 to build the repository. Kotlin 2.4.21 compiles the libraries for JVM 26.
 
-This guide explains how to propose changes that are easy to review and safe to
-merge.
+## Set up the checkout
 
-## Development setup
+1. Clone the repository.
+2. Run `./gradlew -v` to see which JDK Gradle uses.
+3. Run `make build`.
 
-To work on the project locally, use this baseline:
+## Change a module
 
-1. Install JDK 27. The libraries target JVM 26, the highest bytecode version Kotlin 2.4.21 supports.
-2. Clone the repository.
-3. Run `./gradlew -v` to confirm your toolchain.
-4. Run `make build` once to validate local setup.
+- Keep identifiers, contexts, and result types in `konditional-types`. This module is independent of the engine and JSON modules.
+- Keep evaluation and namespace state in `konditional-engine`.
+- Parse external snapshots in `konditional-json`. If a snapshot fails to decode, keep the previous namespace state.
 
-## Repository architecture constraints
+See [the module map](docs/reference/module-dependency-map.mdx) for dependencies.
 
-Before writing code, keep these invariants in mind:
+## Prepare a pull request
 
-- `konditional-core` is pure domain logic and must not depend on runtime or
-  serialization modules.
-- External input is untrusted and must be parsed into typed models.
-- Core evaluation behavior must remain deterministic.
-- Runtime state updates must preserve atomic snapshot semantics.
+1. Add tests for each behavior you change. For concurrent updates, cover whole-snapshot reads. For new inputs, cover accepted values and typed failures.
+2. If you change a public API, update its KDoc and user guide.
+3. Run `make test` for the Kotlin suite. Use `make check` for the repository checks.
+4. For site changes, use Node.js 22 LTS and npm. Run `make docs-serve` to preview the MDX pages and `make docs-build` to check the site. Edit `docs/docs.json` for navigation changes.
+5. Keep the pull request focused on one change. Use a Conventional Commit title such as `docs: correct the install guide`.
+6. Review the impact on `CHANGELOG.md`. Request review after CI passes.
 
-For deeper context, read `AGENTS.md` and the guides under `docs/`.
+## Update the glossary
 
-## Development workflow
+Edit `docs/appendix/glossary.json` to change a term, its definition, or its source. From the repository root, regenerate the reader table with `jq`.
 
-Use the narrowest command that validates your change:
+```bash
+jq -r '"---\ntitle: \"Glossary\"\n---\n\n| Term | Meaning |\n| --- | --- |", (.entries[] | "| \(.term) | \(.definition) |")' \
+    docs/appendix/glossary.json > docs/appendix/glossary.mdx
+```
 
-- `make build` for compilation checks
-- `make test` for behavior checks
-- `make detekt` for static analysis
-- `make check` for standard CI-equivalent verification
+## Report a problem
 
-For documentation changes, use Node.js 22 LTS and npm. Edit pages under
-`docs/` and navigation in `docs/docs.json`. Run `make docs-serve` to preview
-your changes and `make docs-build` to validate the site and check internal links.
+For bugs and feature requests, open a [GitHub issue](https://github.com/amichne/konditional/issues).
 
-## Testing expectations
-
-Behavioral changes must include tests that prove affected invariants.
-
-Examples:
-
-- determinism: same input yields same output
-- boundary parsing: invalid payloads return typed failures
-- atomicity: no partial reads during updates
-- namespace isolation: no cross-namespace side effects
-
-## Commit and pull request guidelines
-
-Follow these rules for all pull requests:
-
-1. Use Conventional Commits (for example, `feat:`, `fix:`, `docs:`).
-2. Keep each pull request focused on one concern.
-3. Update docs when public API or behavior changes.
-4. Include tests for non-trivial changes.
-5. Ensure CI is green before requesting review.
-
-## Pull request checklist
-
-Before opening a pull request, confirm:
-
-- [ ] Build and tests pass locally.
-- [ ] Public API changes include KDoc and usage docs.
-- [ ] New boundary behavior returns typed errors, not ad hoc exceptions.
-- [ ] No dependency direction violations were introduced.
-- [ ] Changelog impact was considered (`CHANGELOG.md` when applicable).
-
-## Reporting issues
-
-- For bugs and feature proposals, use GitHub Issues.
-- For security issues, do not open a public issue; use `SECURITY.md`.
+For a security report, contact the maintainer privately by [email](mailto:austin@michne.com).
