@@ -6,6 +6,7 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.fixtures.Platform
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationMetadata
 import io.amichne.konditional.core.result.KonditionalBoundaryFailure
@@ -26,6 +27,29 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class NamespaceJsonTest {
+    @Test
+    fun zeroPercentRolloutPreservesBothAllowlistsAcrossSnapshotReload() {
+        val flagUser = StableId.of("flag-tester")
+        val ruleUser = StableId.of("rule-tester")
+        val namespace = object : Namespace("rollout-round-trip") {
+            val enabled by boolean<TestContext>(default = false) {
+                allowlist(flagUser)
+                rule(true) {
+                    rollout { 0 }
+                    allowlist(ruleUser)
+                }
+            }
+        }
+
+        val json = namespace.toJson()
+        assertTrue("\"rollout\"" in json)
+        assertTrue("\"rolloutAllowlist\"" in json)
+        assertIs<ParseResult.Success<*>>(namespace.fromJson(json))
+        assertTrue(namespace.enabled.evaluate(TestContext(stableId = flagUser)))
+        assertTrue(namespace.enabled.evaluate(TestContext(stableId = ruleUser)))
+        assertFalse(namespace.enabled.evaluate(TestContext(stableId = StableId.of("other"))))
+    }
+
     @Test
     fun flatPayloadCannotSilentlyIgnorePortableConditions() {
         val namespace = object : Namespace("flat-with-conditions") {
@@ -68,10 +92,10 @@ class NamespaceJsonTest {
             snapshot(""""conditions":[{"anyOf":null}]"""),
             snapshot(""""conditions":null"""),
             snapshot(""""conditions":[],"ruleId":"bad-rule-id""""),
-            snapshot(""""conditions":[],"rampUp":101"""),
-            snapshot(""""conditions":[],"rampUp":"20""""),
-            snapshot(""""conditions":[],"rampUpAllowlist":[null]"""),
-            snapshot(""""conditions":[],"rampUpAllowlist":[10]"""),
+            snapshot(""""conditions":[],"rollout":101"""),
+            snapshot(""""conditions":[],"rollout":"20""""),
+            snapshot(""""conditions":[],"rolloutAllowlist":[null]"""),
+            snapshot(""""conditions":[],"rolloutAllowlist":[10]"""),
             valid.replace("""{"key":""", """null,{"key":"""),
             valid.replace("""{"value":{"type":"BOOLEAN","value":true},"conditions"""", """null,{"value":{"type":"BOOLEAN","value":true},"conditions""""),
             snapshot(""""note":"missing conditions""""),

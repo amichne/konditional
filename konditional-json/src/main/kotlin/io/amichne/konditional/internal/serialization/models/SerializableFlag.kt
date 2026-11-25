@@ -33,7 +33,7 @@ internal data class SerializableFlag(
     val defaultValue: FlagValue<*>,
     val salt: String = "v1",
     val isActive: Boolean = true,
-    val rampUpAllowlist: Set<String> = emptySet(),
+    val rolloutAllowlist: Set<String> = emptySet(),
     val rules: List<SerializableRule> = emptyList(),
 ) {
     fun toFlagPair(
@@ -62,7 +62,7 @@ internal data class SerializableFlag(
                 defaultValue = FlagValue.from(defaultValue),
                 salt = metadata.salt,
                 isActive = metadata.isActive,
-                rampUpAllowlist = metadata.rampUpAllowlist,
+                rolloutAllowlist = metadata.rolloutAllowlist,
                 rules = flagDefinition.toSerializedRules().map { SerializableRule.fromSpec(it) },
             )
         }
@@ -102,7 +102,7 @@ internal data class SerializableFlag(
             metadata = SerializedFlagDefinitionMetadata(
                 salt = salt,
                 isActive = isActive,
-                rampUpAllowlist = rampUpAllowlist,
+                rolloutAllowlist = rolloutAllowlist,
             ),
             rules = ruleSpecs,
         )

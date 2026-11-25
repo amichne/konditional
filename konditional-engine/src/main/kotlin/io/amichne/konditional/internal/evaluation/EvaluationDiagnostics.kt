@@ -4,7 +4,7 @@ package io.amichne.konditional.internal.evaluation
 
 import io.amichne.konditional.api.BucketInfo
 import io.amichne.konditional.api.KonditionalInternalApi
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.context.fact.FactSpec
 import io.amichne.konditional.values.RuleId
@@ -76,7 +76,7 @@ data class EvaluationDiagnostics<T : Any>(
          *
          * Invariants:
          * - [matched] contains the winning rule explanation and its computed bucket metadata.
-         * - [skippedByRollout], when present, identifies the first matching rule excluded by ramp-up before the winner.
+         * - [skippedByRollout], when present, identifies the first matching rule excluded by rollout before the winner.
          */
         data class Rule(
             val matched: RuleMatch<RuleExplanation>,
@@ -88,7 +88,7 @@ data class EvaluationDiagnostics<T : Any>(
          *
          * Invariants:
          * - [skippedByRollout], when present, identifies the first rule
-         *   that matched criteria but was excluded by ramp-up.
+         *   that matched criteria but was excluded by rollout.
          */
         data class Default(
             val skippedByRollout: RuleMatch<RuleExplanation>? = null,
@@ -126,7 +126,7 @@ data class EvaluationDiagnostics<T : Any>(
      */
     sealed interface RuleDetails {
         val note: String?
-        val rollout: RampUp
+        val rollout: Rollout
         val targeting: TargetingNode
         val totalSpecificity: Int
         val ruleId: RuleId
@@ -144,7 +144,7 @@ data class EvaluationDiagnostics<T : Any>(
     /** Structural criteria and identity of the winning or rollout-excluded rule. */
     data class RuleExplanation(
         override val note: String?,
-        override val rollout: RampUp,
+        override val rollout: Rollout,
         override val targeting: TargetingNode,
         override val totalSpecificity: Int,
         override val ruleId: RuleId,

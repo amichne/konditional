@@ -3,8 +3,8 @@ package io.amichne.konditional.api
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.evaluation.Bucketing.isInRampUp
-import io.amichne.konditional.core.evaluation.Bucketing.rampUpThresholdBasisPoints
+import io.amichne.konditional.core.evaluation.Bucketing.isInRollout
+import io.amichne.konditional.core.evaluation.Bucketing.rolloutThresholdBasisPoints
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.ops.Metrics
 import io.amichne.konditional.core.registry.EvaluationSnapshot
@@ -115,7 +115,7 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDia
         registry = snapshot,
     )
     val skippedByRollout =
-        trace.skippedByRampUp?.toRuleMatch(
+        trace.skippedByRollout?.toRuleMatch(
             bucket = trace.bucket,
             featureKey = key,
             salt = definition.salt,
@@ -158,8 +158,8 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
                 salt = salt,
                 bucket = bucket,
                 rollout = it.rollout,
-                thresholdBasisPoints = rampUpThresholdBasisPoints(it.rollout),
-                inRollout = isInRampUp(it.rollout, bucket),
+                thresholdBasisPoints = rolloutThresholdBasisPoints(it.rollout),
+                inRollout = isInRollout(it.rollout, bucket),
             ),
         )
     }
@@ -167,7 +167,7 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
 
 private fun Rule<*>.toExplanation(): EvaluationDiagnostics.RuleExplanation = EvaluationDiagnostics.RuleExplanation(
     note = note,
-    rollout = rampUp,
+    rollout = rollout,
     targeting = targeting.toTargetingNode(),
     totalSpecificity = specificity(),
     ruleId = ruleId,

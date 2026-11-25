@@ -1,6 +1,6 @@
 package io.amichne.konditional.core.evaluation
 
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.id.HexId
 import java.security.MessageDigest
 import kotlin.math.roundToInt
@@ -38,9 +38,9 @@ internal object Bucketing {
     }
 
     /**
-     * Converts a rampUp percentage (0.0-100.0) into basis points (0-10_000).
+     * Converts a rollout percentage (0.0-100.0) into basis points (0-10_000).
      */
-    fun rampUpThresholdBasisPoints(rollout: RampUp): Int = (rollout.value * 100.0).roundToInt()
+    fun rolloutThresholdBasisPoints(rollout: Rollout): Int = (rollout.value * 100.0).roundToInt()
 
     /**
      * Default bucket for contexts without a stable ID.
@@ -49,13 +49,13 @@ internal object Bucketing {
      */
     fun missingStableIdBucket(): Int = MISSING_STABLE_ID_BUCKET
 
-    fun isInRampUp(
-        rampUp: RampUp,
+    fun isInRollout(
+        rollout: Rollout,
         bucket: Int,
     ): Boolean =
         when {
-            rampUp <= 0.0 -> false
-            rampUp >= 100.0 -> true
-            else -> bucket < rampUpThresholdBasisPoints(rampUp)
+            rollout <= 0.0 -> false
+            rollout >= 100.0 -> true
+            else -> bucket < rolloutThresholdBasisPoints(rollout)
         }
 }

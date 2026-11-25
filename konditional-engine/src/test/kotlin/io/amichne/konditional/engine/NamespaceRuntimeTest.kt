@@ -78,11 +78,11 @@ class NamespaceRuntimeTest {
     }
 
     @Test
-    fun rampUpBucketingIsDeterministicForStableId() {
-        val namespace = object : Namespace.TestNamespaceFacade("engine-ramp-up") {
+    fun rolloutBucketingIsDeterministicForStableId() {
+        val namespace = object : Namespace.TestNamespaceFacade("engine-rollout") {
             val rollout by boolean<Context>(default = false) {
                 enable {
-                    rampUp { 50 }
+                    rollout { 50 }
                 }
             }
         }

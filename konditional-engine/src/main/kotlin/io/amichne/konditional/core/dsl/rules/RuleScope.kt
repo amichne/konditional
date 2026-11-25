@@ -22,7 +22,7 @@ import io.amichne.konditional.core.dsl.rules.targeting.scopes.StableIdTargetingS
  * ```kotlin
  * rule {
  *     match(environment.oneOf(PRODUCTION))
- *     rampUp { 50 }
+ *     rollout { 50 }
  *     note("Gradual rollout")
  * }
  * ```

@@ -43,7 +43,7 @@ Each entry in `flags` represents one feature definition for the namespace.
 | `defaultValue` | Typed value envelope for the flag's default |
 | `salt` | Stable bucketing salt |
 | `isActive` | Whether the flag is active |
-| `rampUpAllowlist` | Stable IDs that bypass ramp-up gating |
+| `rolloutAllowlist` | Stable IDs that bypass rollout gating |
 | `rules` | Serialized rule list in snapshot order |
 
 ## Value envelope shapes
@@ -69,8 +69,8 @@ Each rule entry can carry these fields.
 | --- | --- |
 | `value` | Typed envelope for the rule value |
 | `ruleId` | Optional serialized rule identifier |
-| `rampUp` | Rollout percentage as a `Double` |
-| `rampUpAllowlist` | Stable IDs that bypass rule ramp-up gating |
+| `rollout` | Rollout percentage as a `Double` |
+| `rolloutAllowlist` | Stable IDs that bypass rule rollout gating |
 | `note` | Optional human note |
 | `conditions` | Required ordered array of expressions. Every condition must match. An empty array matches any context. |
 
