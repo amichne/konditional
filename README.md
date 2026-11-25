@@ -7,11 +7,10 @@ Konditional lets you declare feature flags as Kotlin properties. A caller passes
 the input for a decision and gets back the Kotlin type the flag declares.
 
 ```kotlin
-val showNewCheckout: Boolean = CheckoutFlags.newCheckout.evaluate(device)
+val showNewCheckout: Boolean = CheckoutFlags.newCheckout.evaluate(account)
 ```
 
-[Run your first flag](docs/quickstart.mdx) to enable a new checkout on iOS
-and keep the existing checkout on Android.
+[Run your first flag](docs/quickstart.mdx) to enable a new checkout for pilot accounts.
 
 For rollouts, remote configuration, and custom flag values, see
 [Advanced usage](docs/guides.mdx).

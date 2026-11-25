@@ -8,7 +8,7 @@ Call `evaluate` on the feature property. Its context and return type come from t
 
 ```kotlin
 val result: ProductEligibility =
-    CheckoutFlags.productEligibility.evaluate(CommerceContext(Product.PAYMENTS))
+    EligibilityFlags.productEligibility.evaluate(CommerceContext(Product.PAYMENTS))
 ```
 
 | API | Purpose |
@@ -24,13 +24,11 @@ val result: ProductEligibility =
 | API | Purpose |
 | --- | --- |
 | `Context` | Base evaluation input |
-| `Context.LocaleContext` | Opt-in locale targeting |
-| `Context.PlatformContext` | Opt-in platform targeting |
-| `Context.VersionContext` | Opt-in version targeting |
+| `FactSchema` | Declares the facts a namespace accepts |
+| `SingleFact<T>`, `MultiFact<T>`, `OrderedFact<T>` | Declare a fact's value domain and supported operations |
+| `Facts.of(...)` | Supplies typed fact values on a context |
+| `allOf(...)`, `anyOf(...)` | Combine portable fact comparisons |
 | `Context.StableIdContext` | Opt-in stable identity for rollout and allowlists |
-| `Axis<T>` | Descriptor for a domain-specific targeting dimension |
-| `AxisValue<T>` | Enum contract for values that live on an axis |
-| `axes(...)` | Helper for constructing grouped axis selections on a context |
 | `RampUp` | Value type used by rollout-aware rules |
 
 ## Runtime state

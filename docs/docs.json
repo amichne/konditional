@@ -35,7 +35,7 @@
             "group": "Target users",
             "pages": [
               "quickstart/add-ramp-up",
-              "guides/custom-axes"
+              "guides/set-valued-facts"
             ]
           },
           {
@@ -84,7 +84,7 @@
               "concepts",
               "concepts/namespaces",
               "concepts/typed-features",
-              "concepts/context-and-axes",
+              "concepts/context-and-facts",
               "concepts/rules-and-precedence",
               "concepts/runtime-snapshots",
               "concepts/json-boundary"
