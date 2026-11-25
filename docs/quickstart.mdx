@@ -3,8 +3,7 @@ title: "Run your first flag"
 description: "Enable a new checkout on iOS and keep it off on Android."
 ---
 
-You need a Kotlin/JVM
-project with the Konditional engine. [Add the engine to your project](/quickstart/install).
+Use the Kotlin/JVM module from [Add the engine to your project](/quickstart/install).
 
 ## Declare the flag
 
@@ -18,7 +17,9 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.Platform
 import io.amichne.konditional.core.Namespace
 
-data class Device(override val platform: Platform) : Context.PlatformContext
+data class Device(
+    override val platform: Platform,
+) : Context.PlatformContext
 
 object CheckoutFlags : Namespace("checkout") {
     val newCheckout by boolean<Device>(default = false) {
@@ -33,8 +34,10 @@ Add this function to the same file. Run `main()` from your IDE.
 
 ```kotlin
 fun main() {
-    for (platform in listOf(Platform.IOS, Platform.ANDROID)) {
-        val showNewCheckout: Boolean = CheckoutFlags.newCheckout.evaluate(Device(platform))
+    val platforms = listOf(Platform.IOS, Platform.ANDROID)
+    for (platform in platforms) {
+        val showNewCheckout = CheckoutFlags.newCheckout
+            .evaluate(Device(platform))
         println("$platform: $showNewCheckout")
     }
 }
@@ -48,4 +51,6 @@ ANDROID: false
 The iOS device matches the rule. The Android device gets the default. Change
 the rule to `platforms(Platform.ANDROID)` and run it again to reverse the results.
 
-When you need a second use case, choose a guide from [Advanced usage](/guides).
+<Card title="Check your flag" href="/quickstart/check-your-flag">
+  Turn those two printed values into checks that catch a rule change.
+</Card>

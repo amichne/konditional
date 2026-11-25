@@ -1,10 +1,12 @@
 ---
 title: "Concepts"
+description: "Follow a flag from its Kotlin declaration to the value a caller receives."
 ---
 
-- [Namespaces and feature identity](/concepts/namespaces)
-- [Feature value and context types](/concepts/typed-features)
-- [Context and axes](/concepts/context-and-axes)
-- [Rule selection and precedence](/concepts/rules-and-precedence)
-- [Runtime snapshots](/concepts/runtime-snapshots)
-- [JSON import and export](/concepts/json-boundary)
+1. **Declare the decision.** [Namespaces](/concepts/namespaces) group the flags that share a registry. [Typed features](/concepts/typed-features) determine which context a flag accepts and which value it returns.
+2. **Supply the input.** [Context and axes](/concepts/context-and-axes) shows how a request supplies a platform, version, or application-specific value.
+3. **Select a value.** [Rules and precedence](/concepts/rules-and-precedence) explains which matching rule wins and when the default applies.
+
+<Accordion title="What changes when rules can be updated at runtime?">
+  [Runtime snapshots](/concepts/runtime-snapshots) describes the state that a namespace loads or rolls back. [JSON import and export](/concepts/json-boundary) explains how an external payload becomes that state.
+</Accordion>

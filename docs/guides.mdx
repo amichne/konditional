@@ -1,29 +1,32 @@
 ---
 title: "Advanced usage"
-description: "Guides for targeting, typed values, and runtime updates."
+mode: wide
+description: "Choose a guide for the decision your application needs to make."
 ---
 
-Choose a guide when your application needs more than the
-[first Boolean flag](/quickstart).
+<Columns cols={2}>
+  <Card title="Gradual rollout" href="/quickstart/add-ramp-up">
+    Enable checkout for 25% of rollout buckets and check that a user stays in the same bucket.
+  </Card>
+  <Card title="Remote configuration" href="/guides/remote-configuration">
+    Apply new checkout rules between releases and keep the previous rules if an update fails.
+  </Card>
+</Columns>
 
-## Change who sees a feature
-
-- [Roll out a flag to a percentage of users](/quickstart/add-ramp-up)
-- [Target a domain value such as environment or tenant](/guides/custom-axes)
-
-## Return a different type
-
-- [Declare an enum flag](/quickstart/define-first-namespace) when checkout has several eligibility states.
-- [Use a custom Konstrained value](/guides/custom-konstrained-values) when a flag returns a structured value such as a retry policy.
-
-## Update flags at runtime
-
-- [Export and load a JSON snapshot](/quickstart/load-json-safely)
-- [Apply remote configuration](/guides/remote-configuration)
-
-## Adopt and test flags
-
-- [Migrate a caller from string flags](/guides/migrating-from-string-flags)
-- [Choose tests for your flags](/guides/testing-strategies)
-- [Set up a standalone checkout application](/guides/standalone-checkout)
-- [Run the checkout checks](/quickstart/verify-behavior)
+<AccordionGroup>
+  <Accordion title="My rules depend on a product, tenant, or environment">
+    [Custom axes](/guides/custom-axes) adds an environment to the context and targets production in a rule.
+  </Accordion>
+  <Accordion title="My caller needs more than a Boolean">
+    [Declare an enum flag](/quickstart/define-first-namespace) for a fixed set of outcomes. [Use an enum result](/quickstart/evaluate-a-typed-flag) handles them in an exhaustive `when`. For a value with several fields, such as a retry policy, see [Custom Konstrained values](/guides/custom-konstrained-values).
+  </Accordion>
+  <Accordion title="I want to try a snapshot before wiring up a fetch">
+    [Load JSON safely](/quickstart/load-json-safely) exports a namespace, reloads it, and checks what happens when the JSON is malformed.
+  </Accordion>
+  <Accordion title="I’m adopting Konditional in an existing application">
+    [Migrate a string-key flag](/guides/migrating-from-string-flags) moves one caller at a time. [Tests for a namespace](/guides/testing-strategies) lists the assertions for targeting, isolation, and failed updates.
+  </Accordion>
+  <Accordion title="I want a complete example I can run outside my application">
+    [Set up a standalone checkout application](/guides/standalone-checkout) builds a Gradle project using local artifacts. [Verify the standalone checkout](/quickstart/verify-behavior) connects the examples and runs the checks.
+  </Accordion>
+</AccordionGroup>

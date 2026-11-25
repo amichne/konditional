@@ -1,5 +1,5 @@
 ---
-title: "Add ramp-up"
+title: "Gradual rollout"
 ---
 
 Enable the checkout upsell for 25% of rollout buckets. The engine calculates each bucket from the salt, feature key, and stable ID. Two namespaces with the same three inputs assign the same bucket.
@@ -31,3 +31,5 @@ fun checkRollout() {
 ```
 
 The decision includes the bucket for a matched rule or a rule skipped by ramp-up.
+
+To interpret the bucket for one user, see [Evaluation diagnostics](/reference/evaluation-diagnostics#rule-matches).

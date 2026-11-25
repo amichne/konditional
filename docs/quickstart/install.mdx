@@ -36,4 +36,10 @@ Use JDK 27. The Konditional build uses Gradle 9.8.2 and Kotlin 2.4.21.
     }
     ```
 
-Reload the Gradle project in your IDE, then [declare your first flag](/quickstart#declare-the-flag).
+Reload the Gradle project in your IDE.
+
+<Accordion title="Where does Gradle get the engine?">
+  The included build supplies `konditional-engine` from your checkout. Maven Central supplies its external dependencies. To try the versioned artifacts in a separate application, see [Set up a standalone checkout application](/guides/standalone-checkout).
+</Accordion>
+
+[Run your first flag](/quickstart#declare-the-flag) in this module to check that an iOS device gets the new checkout.

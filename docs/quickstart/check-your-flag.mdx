@@ -1,0 +1,42 @@
+---
+title: "Check your flag"
+description: "Check both paths through the checkout rule and see why a device got its value."
+---
+
+In [Run your first flag](/quickstart), the iOS device matched the checkout rule and the Android device got the default. With the rule set to `platforms(Platform.IOS)`, replace `main()` in `Checkout.kt` with this version.
+
+```kotlin
+fun main() {
+    val flag = CheckoutFlags.newCheckout
+    check(flag.evaluate(Device(Platform.IOS)))
+    check(!flag.evaluate(Device(Platform.ANDROID)))
+    println("Both checkout checks passed")
+}
+```
+
+Run `main()`. Now change the rule to target Android and run it again. The first check fails because the iOS device gets the default. Restore the iOS rule to make both checks pass.
+
+<Accordion title="How do I tell a matching rule from a default?">
+  Add `import io.amichne.konditional.api.explain` at the top of the file. Put these lines inside `main()`, before the checks.
+
+  ```kotlin
+  val result = flag.explain(Device(Platform.ANDROID))
+  println(result.value)
+  println(result.decision)
+  ```
+
+  With the iOS rule restored, Android returns `false` with a `Default` decision. Change the device in the call to iOS and you get `true` with a `Rule` decision. [Evaluation diagnostics](/reference/evaluation-diagnostics#decision-branches) describes each outcome.
+</Accordion>
+
+## What does your flag need next?
+
+<Columns cols={2}>
+  <Card title="Gradual rollout" href="/quickstart/add-ramp-up">
+    Use a stable user ID to enable checkout for a percentage of users.
+  </Card>
+  <Card title="Declare an enum flag" href="/quickstart/define-first-namespace">
+    Return an eligibility value when checkout needs a manual-review outcome.
+  </Card>
+</Columns>
+
+For a flag whose rules change between releases, see [Remote configuration](/guides/remote-configuration).

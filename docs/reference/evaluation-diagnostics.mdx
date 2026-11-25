@@ -4,8 +4,11 @@ title: "Evaluation diagnostics"
 
 `explain(context)` returns the value and the decision for one evaluation. Use the decision to distinguish a default from a matching rule.
 
+Use the flag from [Run your first flag](/quickstart) and import `io.amichne.konditional.api.explain`.
+
 ```kotlin
-val result = CheckoutFlags.productEligibility.explain(CommerceContext(Product.PAYMENTS))
+val result = CheckoutFlags.newCheckout
+    .explain(Device(Platform.IOS))
 println(result.value)
 println(result.decision)
 ```

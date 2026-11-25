@@ -1,9 +1,14 @@
 ---
 title: "Guarantees"
+description: "Find the contract for a flag read, a concurrent update, or a rejected payload."
 ---
 
-- [Which types the compiler checks](/guarantees/type-safety)
-- [When evaluation is deterministic](/guarantees/determinism)
-- [Which operations affect one namespace](/guarantees/namespace-isolation)
-- [What concurrent readers see](/guarantees/atomic-snapshots)
-- [What happens to a rejected snapshot](/guarantees/parse-boundary)
+| When you need to know… | Read |
+| --- | --- |
+| Which input and return types the compiler checks | [Type safety](/guarantees/type-safety) |
+| Whether the same inputs give the same result | [Determinism](/guarantees/determinism) |
+| Which namespace a load or rollback can affect | [Namespace isolation](/guarantees/namespace-isolation) |
+| What a caller sees while another thread loads new rules | [Atomic snapshots](/guarantees/atomic-snapshots) |
+| Which configuration survives a failed import | [Rejected snapshots](/guarantees/parse-boundary) |
+
+For executable assertions based on these contracts, see [Tests for a namespace](/guides/testing-strategies).

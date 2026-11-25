@@ -6,9 +6,11 @@ title: "API surface"
 
 Call `evaluate` on the feature property. Its context and return type come from the namespace declaration.
 
+Using the flag from [Run your first flag](/quickstart) gives a Boolean result.
+
 ```kotlin
-val result: ProductEligibility =
-    CheckoutFlags.productEligibility.evaluate(CommerceContext(Product.PAYMENTS))
+val showNewCheckout = CheckoutFlags.newCheckout
+    .evaluate(Device(Platform.IOS))
 ```
 
 | API | Purpose |
