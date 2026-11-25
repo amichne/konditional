@@ -1,0 +1,34 @@
+---
+title: "Check rollout and snapshot behavior"
+description: "Check rollout consistency and what callers see after a rejected update."
+---
+
+## Does a user stay in the same rollout group?
+
+Use the flag and context from [Gradual rollout](/quickstart/add-ramp-up). Evaluate the
+same flag twice with the same stable ID and rules.
+
+```kotlin
+val context = RolloutContext(StableId.of("same-user"))
+val first = RolloutFlags.checkoutUpsell.explain(context)
+val second = RolloutFlags.checkoutUpsell.explain(context)
+check(first.value == second.value)
+check(first.decision == second.decision)
+```
+
+## What happens if an update fails?
+
+With [JSON snapshot loading](/quickstart/load-json-safely) set up, record the value of
+the checkout flag before passing in malformed JSON. Check both the error and
+the value seen by the next caller.
+
+```kotlin
+val device = Device(Platform.IOS)
+val before = CheckoutFlags.newCheckout.evaluate(device)
+check(CheckoutFlags.fromJson("{ not-json") is ParseResult.Failure)
+check(CheckoutFlags.newCheckout.evaluate(device) == before)
+```
+
+To check that an update stays within one namespace, declare the same flag key
+in two namespaces. Load a snapshot into one and check the other's value.
+[Namespace isolation](/guarantees/namespace-isolation).

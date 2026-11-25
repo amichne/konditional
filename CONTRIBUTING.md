@@ -35,9 +35,9 @@ Use the narrowest command that validates your change:
 - `make detekt` for static analysis
 - `make check` for standard CI-equivalent verification
 
-If you change documentation under `docs/` or `zensical.toml`, also run:
-
-- `make docs-build`
+For documentation changes, use Node.js 22 LTS and npm. Edit pages under
+`docs/` and navigation in `docs/docs.json`. Run `make docs-serve` to preview
+your changes and `make docs-build` to validate the site and check internal links.
 
 ## Testing expectations
 

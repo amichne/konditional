@@ -2,13 +2,10 @@
 
 .DEFAULT_GOAL := help
 
-VENV_DIR := docs/venv
-PYTHON := python3
-VENV_BIN := $(VENV_DIR)/bin
-PIP := $(VENV_BIN)/pip
-ZENSICAL := $(VENV_BIN)/zensical
+MINT_VERSION := 4.3.91
+MINT_DIR := build/mintlify/$(MINT_VERSION)
+MINT := $(MINT_DIR)/node_modules/.bin/mint
 GRADLEW := ./gradlew
-REQUIREMENTS := docs/requirements.txt
 GRADLE_FLAGS := --no-daemon --stacktrace
 
 BLUE := \033[0;34m
@@ -23,7 +20,7 @@ help: ## Display this help message
 	@echo ""
 	@awk 'BEGIN {FS = ":.*##"; printf "Usage:\n  make $(GREEN)<target>$(NC)\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  $(GREEN)%-28s$(NC) %s\n", $$1, $$2 } /^##@/ { printf "\n$(YELLOW)%s$(NC)\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-all: clean build test docs-build ## Clean, build, test, and generate docs
+all: clean build test docs-build ## Clean, build, test, and validate docs
 
 ##@ Gradle Tasks
 
@@ -146,26 +143,20 @@ publish-gradle-smoke: ## Internal: smoke-check publish graph without remote push
 
 ##@ Documentation
 
-docs-install: ## Install Zensical into docs/venv
-	@echo "$(BLUE)Installing Zensical docs toolchain...$(NC)"
-	@test -d "$(VENV_DIR)" || $(PYTHON) -m venv "$(VENV_DIR)"
-	@$(PIP) install --upgrade pip
-	@$(PIP) install -r "$(REQUIREMENTS)"
-	@echo "$(GREEN)Zensical docs toolchain installed$(NC)"
+docs-install: $(MINT) ## Install the pinned Mintlify CLI
 
-docs-build: docs-install ## Build the Zensical docs site
-	@echo "$(BLUE)Building Zensical site...$(NC)"
-	@$(ZENSICAL) build --clean
-	@echo "$(GREEN)Zensical site built successfully$(NC)"
+$(MINT):
+	npm install --prefix "$(MINT_DIR)" --no-save --no-package-lock --no-audit --no-fund mint@$(MINT_VERSION)
 
-docs-serve: docs-install ## Serve docs locally
-	@echo "$(BLUE)Starting Zensical docs server...$(NC)"
-	@$(ZENSICAL) serve
+docs-build: docs-install ## Validate the Mintlify site and internal links
+	cd docs && "../$(MINT)" validate
+	cd docs && "../$(MINT)" broken-links
 
-docs-clean: ## Clean generated documentation
-	@echo "$(BLUE)Cleaning documentation...$(NC)"
-	@rm -rf site/
-	@echo "$(GREEN)Documentation cleaned$(NC)"
+docs-serve: docs-install ## Preview the Mintlify site locally
+	cd docs && "../$(MINT)" dev --no-open
+
+docs-clean: ## Remove the local docs CLI and legacy site output
+	rm -rf build/mintlify/ site/
 
 ##@ Combined Tasks
 

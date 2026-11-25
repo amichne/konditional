@@ -10,11 +10,11 @@ the input for a decision and gets back the Kotlin type the flag declares.
 val showNewCheckout: Boolean = CheckoutFlags.newCheckout.evaluate(device)
 ```
 
-[Run your first flag](docs/quickstart/index.md) to enable a new checkout on iOS
+[Run your first flag](docs/quickstart.mdx) to enable a new checkout on iOS
 and keep the existing checkout on Android.
 
 For rollouts, remote configuration, and custom flag values, see
-[Advanced usage](docs/guides/index.md).
+[Advanced usage](docs/guides.mdx).
 
 ## Project
 

@@ -1,0 +1,35 @@
+---
+title: "Load JSON safely"
+description: "Use a snapshot to update the rules of an existing namespace."
+---
+
+This example
+uses `CheckoutFlags` from [the first flag](/quickstart). With the
+[local build included](/quickstart/install), add the JSON module to your dependencies.
+
+```kotlin
+implementation("io.github.amichne:konditional-json")
+```
+
+## Export and reload the checkout rules
+
+Export the namespace to get JSON that matches its declared flags.
+`fromJson` checks the full snapshot before it applies the update.
+
+```kotlin
+import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.serialization.fromJson
+import io.amichne.konditional.serialization.toJson
+
+fun reloadCheckout() {
+    val json = CheckoutFlags.toJson()
+    when (val result = CheckoutFlags.fromJson(json)) {
+        is ParseResult.Success -> println("Loaded checkout rules")
+        is ParseResult.Failure -> println(result.error.message)
+    }
+}
+```
+
+Malformed JSON returns `ParseResult.Failure`. Callers continue to evaluate
+flags with the previous configuration. To load a snapshot fetched by your
+application, see [Remote configuration](/guides/remote-configuration).
