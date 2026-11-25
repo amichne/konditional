@@ -78,5 +78,8 @@ Each rule entry can carry these fields.
 | `versionRange` | Serialized version-range object |
 | `axes` | Map of axis ID to allowed value IDs |
 
+If a rule contains an anonymous predicate, an `anyOf` group, or another condition the flat fields cannot preserve,
+`toJson()` throws `KonditionalBoundaryFailure` with `ParseError.InvalidSnapshot`. The error identifies the feature and rule.
+
 A `CONTEXTUAL` value comes from a Kotlin resolver. The snapshot records the rule but cannot recreate its resolver.
 `fromJson()` returns `ParseError.InvalidSnapshot` for a snapshot containing such a rule. The namespace keeps its previous configuration.

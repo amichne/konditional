@@ -169,6 +169,11 @@ sealed interface Targeting<in C : Context> {
     }
 
     companion object {
+        // A restored built-in guard must compare equal to its declaration, including its capability check.
+        private val localeContext: (Context) -> Context.LocaleContext? = { it as? Context.LocaleContext }
+        private val platformContext: (Context) -> Context.PlatformContext? = { it as? Context.PlatformContext }
+        private val versionContext: (Context) -> Context.VersionContext? = { it as? Context.VersionContext }
+
         /** Returns an [All] that matches every context (identity element). */
         fun <C : Context> catchAll(): All<C> = All(emptyList())
 
@@ -179,15 +184,15 @@ sealed interface Targeting<in C : Context> {
          * probe for [Context.LocaleContext] in the system.
          */
         fun <C : Context> locale(ids: Set<String>): Targeting<C> =
-            Guarded(Locale(ids)) { c -> c as? Context.LocaleContext }
+            Guarded(Locale(ids), localeContext)
 
         /** Lifts a platform leaf into `Targeting<C>` via a [Guarded] wrapper. */
         fun <C : Context> platform(ids: Set<String>): Targeting<C> =
-            Guarded(Platform(ids)) { c -> c as? Context.PlatformContext }
+            Guarded(Platform(ids), platformContext)
 
         /** Lifts a version leaf into `Targeting<C>` via a [Guarded] wrapper. */
         fun <C : Context> version(range: VersionRange): Targeting<C> =
-            Guarded(Version(range)) { c -> c as? Context.VersionContext }
+            Guarded(Version(range), versionContext)
 
         /**
          * Lifts a capability-narrowed predicate into `Targeting<C>`.

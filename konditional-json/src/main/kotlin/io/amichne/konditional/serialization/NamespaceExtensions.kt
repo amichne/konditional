@@ -2,10 +2,15 @@ package io.amichne.konditional.serialization
 
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.instance.Configuration
+import io.amichne.konditional.core.result.KonditionalBoundaryFailure
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.toParseResult
 import io.amichne.konditional.serialization.snapshot.ConfigurationCodec
 
+/**
+ * Exports the namespace configuration.
+ * @throws KonditionalBoundaryFailure if the snapshot cannot preserve a rule's targeting conditions.
+ */
 fun Namespace.toJson(): String = ConfigurationCodec.encode(this)
 
 /**

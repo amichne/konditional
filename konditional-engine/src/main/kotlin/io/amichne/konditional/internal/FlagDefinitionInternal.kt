@@ -9,6 +9,8 @@ import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
+import io.amichne.konditional.core.result.KonditionalBoundaryFailure
+import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.rules.ConditionalValue.Companion.targetedBySerialized
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
@@ -65,23 +67,11 @@ fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
         feature = feature,
         bounds =
             rules.map { spec ->
-                val leaves = buildList<Targeting<C>> {
-                    if (spec.locales.isNotEmpty())
-                        add(Targeting.locale(spec.locales))
-                    if (spec.platforms.isNotEmpty())
-                        add(Targeting.platform(spec.platforms))
-                    spec.versionRange
-                        ?.takeIf { it != Unbounded }
-                        ?.let { add(Targeting.version(it)) }
-                    spec.axes.forEach { (axisId, allowedIds) ->
-                        add(Targeting.Axis(axisId, allowedIds))
-                    }
-                }
                 Rule<C>(
                     rampUp = RampUp.of(spec.rampUp),
                     rampUpAllowlist = spec.rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
                     note = spec.note,
-                    targeting = Targeting.All(leaves),
+                    targeting = Targeting.All(spec.conditions()),
                     ruleId = spec.ruleId,
                 ).targetedBySerialized(spec.value, spec.type)
             },
@@ -90,6 +80,13 @@ fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
         isActive = metadata.isActive,
         rampUpAllowlist = metadata.rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
     )
+
+private fun <C : Context> SerializedFlagRuleSpec<*>.conditions(): List<Targeting<C>> = buildList {
+    if (locales.isNotEmpty()) add(Targeting.locale(locales))
+    if (platforms.isNotEmpty()) add(Targeting.platform(platforms))
+    versionRange?.takeIf { it != Unbounded }?.let { add(Targeting.version(it)) }
+    axes.forEach { (axisId, allowedIds) -> add(Targeting.Axis(axisId, allowedIds)) }
+}
 
 @KonditionalInternalApi
 fun FlagDefinition<*, *, *>.toSerializedMetadata(): SerializedFlagDefinitionMetadata =
@@ -106,7 +103,7 @@ fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any
         val type = cv.serializedValueType
         val value = staticValue ?: defaultValue
         val targeting = cv.rule.targeting
-        SerializedFlagRuleSpec(
+        val spec = SerializedFlagRuleSpec(
             value = value,
             type = type,
             ruleId = cv.rule.ruleId,
@@ -118,4 +115,15 @@ fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any
             versionRange = targeting.versionRangeOrNull() ?: Unbounded,
             axes = targeting.axesOrEmpty(),
         )
+        // Flat fields can reorder a conjunction. Each occurrence must still survive, including duplicates.
+        val restorable = spec.conditions<Context>().toMutableSet()
+        for (condition in targeting.targets) {
+            if (!restorable.remove(condition)) {
+                throw KonditionalBoundaryFailure(ParseError.invalidSnapshot(
+                    "Cannot export feature '${feature.id}', rule '${cv.rule.ruleId}': " +
+                        "the snapshot cannot preserve the ${condition::class.simpleName} condition.",
+                ))
+            }
+        }
+        spec
     }
