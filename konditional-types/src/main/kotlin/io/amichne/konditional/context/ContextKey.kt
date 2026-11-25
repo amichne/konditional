@@ -1,20 +1,6 @@
 package io.amichne.konditional.context
 
-/**
- * Typed key that identifies a named field within a [Context].
- *
- * Using [ContextKey] instead of a raw [String] prevents silent mislookups caused by
- * key typos or identifier konditional — issues that raw strings hide until runtime.
- *
- * ## Usage
- *
- * ```kotlin
- * val LOCALE_KEY = ContextKey("locale")
- * val PLATFORM_KEY = ContextKey("platform")
- * ```
- *
- * @property id The stable, non-blank string identifier for this context field.
- */
+/** Stable external identifier for a namespace-declared context fact. Rejects blank identifiers. */
 @JvmInline
 value class ContextKey(val id: String) {
     init {

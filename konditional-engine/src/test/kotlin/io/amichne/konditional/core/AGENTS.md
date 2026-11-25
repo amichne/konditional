@@ -9,4 +9,4 @@ Tests for namespace behavior, deterministic evaluation, and namespace isolation.
 - `NamespaceBehaviorTest.kt`
 
 ## Rules
-- Add coverage here when changing namespace declaration, precedence, axis targeting, or cross-namespace isolation.
+- Add coverage here when changing namespace declaration, precedence, fact targeting, or cross-namespace isolation.

@@ -8,6 +8,7 @@ import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.core.registry.EvaluationSnapshot
 import io.amichne.konditional.rules.ConditionalValue
+import io.amichne.konditional.rules.targeting.usesDeclaredFacts
 
 /**
  * Represents a flag definition that can be evaluated within a specific contextFn.
@@ -38,6 +39,12 @@ data class FlagDefinition<T : Any, C : Context, M : Namespace>(
     val salt: String = "v1",
     internal val rampUpAllowlist: Set<HexId> = emptySet(),
 ) {
+    init {
+        require(values.all { it.rule.targeting.usesDeclaredFacts(feature.namespace.factSchema) }) {
+            "Feature '${feature.key}' uses a fact outside namespace '${feature.namespace.id}'."
+        }
+    }
+
     internal val valuesByPrecedence: List<ConditionalValue<T, C>> =
         values.sortedWith(compareByDescending<ConditionalValue<T, C>> { it.rule.specificity() })
 

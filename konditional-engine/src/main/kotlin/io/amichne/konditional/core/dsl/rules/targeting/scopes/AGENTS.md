@@ -3,16 +3,13 @@
 This file scopes `konditional-engine/src/main/kotlin/io/amichne/konditional/core/dsl/rules/targeting/scopes/` and yields to deeper `AGENTS.md` files when present.
 
 ## Purpose
-Targeting DSL fragments for locales, platforms, versions, stable IDs, axes, and custom narrowing.
+Targeting DSL fragments for facts, stable IDs, and custom narrowing.
 
 ## Local Files
 - `AnyOfScope.kt`
-- `AxisTargetingScope.kt`
+- `FactTargetingScope.kt`
 - `ExtensionTargetingScope.kt`
-- `LocaleTargetingScope.kt`
-- `PlatformTargetingScope.kt`
 - `StableIdTargetingScope.kt`
-- `VersionTargetingScope.kt`
 
 ## Rules
 - Every new DSL method needs a corresponding pure targeting representation in `rules/targeting/` and builder support in `internal/builders/`.

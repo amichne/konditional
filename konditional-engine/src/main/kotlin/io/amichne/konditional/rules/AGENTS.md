@@ -10,8 +10,7 @@ Immutable rule and conditional-value domain model used by namespace evaluation.
 - `Rule.kt`
 
 ## Go Deeper
-- `targeting/`: Pure targeting tree and projection helpers.
-- `versions/`: Immutable version-range variants.
+- `targeting/`: Pure targeting tree and namespace fact checks.
 
 ## Rules
 - Keep rule matching and value resolution pure with respect to the provided context and registry snapshot.

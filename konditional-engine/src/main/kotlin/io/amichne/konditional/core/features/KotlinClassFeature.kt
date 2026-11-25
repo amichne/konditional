@@ -21,7 +21,7 @@ import io.amichne.konditional.core.types.Konstrained
  *
  * object Payments : Namespace("payments") {
  *     val PAYMENT_CONFIG by custom(default = PaymentConfig()) {
- *         rule(PaymentConfig(maxRetries = 5, timeout = 60.0)) { android() }
+ *         rule(PaymentConfig(maxRetries = 5, timeout = 60.0)) { match(environment.oneOf(PRODUCTION)) }
  *     }
  * }
  * ```

@@ -1,9 +1,8 @@
 package io.amichne.konditional.rules.targeting
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Context.Companion.getAxisValue
-import io.amichne.konditional.rules.versions.Unbounded
-import io.amichne.konditional.rules.versions.VersionRange
+import io.amichne.konditional.context.fact.FactExpression
+import io.amichne.konditional.context.fact.FactSchema
 
 /**
  * Algebraic description of conditions under which a rule fires.
@@ -19,15 +18,6 @@ import io.amichne.konditional.rules.versions.VersionRange
  * - Non-matching semantics for capability absence: [Guarded.matches] returns
  *   `false`, never throws, when the context does not carry the required capability.
  *
- * ## Constraint to leaf mapping
- * | Targeting dimension | Leaf type          | Required context mixin      |
- * |---------------------|--------------------|-----------------------------|
- * | Locales             | [Locale]           | [Context.LocaleContext]     |
- * | Platforms           | [Platform]         | [Context.PlatformContext]   |
- * | App version range   | [Version]          | [Context.VersionContext]    |
- * | Axis value          | [Axis]             | [Context]                   |
- * | Custom / extension  | [Custom]           | `C` (generic)               |
- * | Capability-narrowed | [Guarded]          | `C` narrowed to `R`         |
  */
 sealed interface Targeting<in C : Context> {
 
@@ -42,54 +32,10 @@ sealed interface Targeting<in C : Context> {
      */
     fun specificity(): Int
 
-    // -- Standard dimension leaves ------------------------------------------------
-
-    /**
-     * Matches when [Context.LocaleContext.locale].id is in [ids].
-     *
-     * Determinism: result depends only on the locale id set and the context's locale.
-     */
-    @JvmInline
-    value class Locale(val ids: Set<String>) : Targeting<Context.LocaleContext> {
-        override fun matches(context: Context.LocaleContext): Boolean = context.locale.id in ids
-        override fun specificity(): Int = 1
-    }
-
-    /**
-     * Matches when [Context.PlatformContext.platform].id is in [ids].
-     *
-     * Determinism: result depends only on the platform id set and the context's platform.
-     */
-    @JvmInline
-    value class Platform(val ids: Set<String>) : Targeting<Context.PlatformContext> {
-        override fun matches(context: Context.PlatformContext): Boolean = context.platform.id in ids
-        override fun specificity(): Int = 1
-    }
-
-    /**
-     * Matches when [Context.VersionContext.appVersion] falls within [range].
-     *
-     * An [Unbounded] range always matches and contributes zero specificity.
-     */
-    data class Version(val range: VersionRange) : Targeting<Context.VersionContext> {
-        override fun matches(context: Context.VersionContext): Boolean = range.contains(context.appVersion)
-        override fun specificity(): Int = if (range == Unbounded) 0 else 1
-    }
-
-    /**
-     * Matches when the context exposes at least one axis value whose id is in [allowedIds]
-     * for the axis identified by [axisId].
-     *
-     * Determinism: result depends only on the axisId, allowedIds set, and context axis values.
-     */
-    data class Axis(
-        val axisId: String,
-        val allowedIds: Set<String>,
-    ) : Targeting<Context> {
-        override fun matches(context: Context): Boolean =
-            context.getAxisValue(axisId).any { it.id in allowedIds }
-
-        override fun specificity(): Int = 1
+    /** A portable predicate over facts declared by a namespace. */
+    data class Facts(val expression: FactExpression) : Targeting<Context> {
+        override fun matches(context: Context): Boolean = expression.matches(context)
+        override fun specificity(): Int = expression.specificity()
     }
 
     /**
@@ -137,8 +83,7 @@ sealed interface Targeting<in C : Context> {
      * - Empty list never matches (annihilator element, dual of [All]'s identity).
      * - [specificity] is the structural maximum of all branch specificities; pure,
      *   no context required — consistent with the [specificity] contract.
-     * - Code-only: not serializable. Treated as opaque by projection helpers,
-     *   same as [Custom].
+     * - Groups that contain a Kotlin callback evaluate in process only.
      *
      * @param targets Ordered list of constraints; any one must match.
      */
@@ -169,30 +114,8 @@ sealed interface Targeting<in C : Context> {
     }
 
     companion object {
-        // A restored built-in guard must compare equal to its declaration, including its capability check.
-        private val localeContext: (Context) -> Context.LocaleContext? = { it as? Context.LocaleContext }
-        private val platformContext: (Context) -> Context.PlatformContext? = { it as? Context.PlatformContext }
-        private val versionContext: (Context) -> Context.VersionContext? = { it as? Context.VersionContext }
-
         /** Returns an [All] that matches every context (identity element). */
         fun <C : Context> catchAll(): All<C> = All(emptyList())
-
-        /**
-         * Lifts a locale leaf into `Targeting<C>` via a [Guarded] wrapper.
-         *
-         * The `as?` cast is intentional and contained; it is the only dynamic
-         * probe for [Context.LocaleContext] in the system.
-         */
-        fun <C : Context> locale(ids: Set<String>): Targeting<C> =
-            Guarded(Locale(ids), localeContext)
-
-        /** Lifts a platform leaf into `Targeting<C>` via a [Guarded] wrapper. */
-        fun <C : Context> platform(ids: Set<String>): Targeting<C> =
-            Guarded(Platform(ids), platformContext)
-
-        /** Lifts a version leaf into `Targeting<C>` via a [Guarded] wrapper. */
-        fun <C : Context> version(range: VersionRange): Targeting<C> =
-            Guarded(Version(range), versionContext)
 
         /**
          * Lifts a capability-narrowed predicate into `Targeting<C>`.
@@ -211,4 +134,13 @@ sealed interface Targeting<in C : Context> {
             evidence = { c -> c as? R },
         )
     }
+}
+
+/** A rule can use only descriptors declared in its namespace. */
+internal fun Targeting<*>.usesDeclaredFacts(schema: FactSchema): Boolean = when (this) {
+    is Targeting.Facts -> expression in schema
+    is Targeting.All<*> -> targets.all { it.usesDeclaredFacts(schema) }
+    is Targeting.AnyOf<*> -> targets.all { it.usesDeclaredFacts(schema) }
+    is Targeting.Guarded<*, *> -> inner.usesDeclaredFacts(schema)
+    is Targeting.Custom<*> -> true
 }

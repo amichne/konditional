@@ -28,8 +28,8 @@ class SnapshotValueTypeTest {
             val mode by enum<Mode, Context>(default = Mode.FIRST)
         }
         fun snapshot(value: Mode, className: String) =
-            """{"flags":[{"key":"${namespace.mode.id.plainId}","defaultValue":{
-                "type":"ENUM","value":"${value.name}","enumClassName":"$className"}}]}"""
+            snapshotDocument("""{"flags":[{"key":"${namespace.mode.id.plainId}","defaultValue":{
+                "type":"ENUM","value":"${value.name}","enumClassName":"$className"}}]}""")
 
         assertIs<ParseResult.Success<*>>(namespace.fromJson(snapshot(Mode.FIRST, Mode.FIRST.javaClass.name)))
         assertIs<ParseResult.Success<*>>(namespace.fromJson(snapshot(Mode.SECOND, Mode::class.java.name)))
@@ -52,7 +52,7 @@ class SnapshotValueTypeTest {
         }
         val wrongRepresentation = """{"flags":[{"key":"${namespace.retry.id.plainId}","defaultValue":{
             "type":"KONSTRAINED_PRIMITIVE","value":"x","konstrainedClassName":"${RetryPolicy::class.java.name}"}}]}"""
-        val failure = assertIs<ParseResult.Failure>(namespace.fromJson(wrongRepresentation))
+        val failure = assertIs<ParseResult.Failure>(namespace.fromJson(snapshotDocument(wrongRepresentation)))
         assertIs<ParseError.InvalidSnapshot>(failure.error)
         assertEquals(RetryPolicy(), namespace.retry.evaluate(TestContext()))
         assertEquals(Label("old"), namespace.label.evaluate(TestContext()))
@@ -66,10 +66,10 @@ class SnapshotValueTypeTest {
         val boolean = """{"type":"BOOLEAN","value":true}"""
         val string = """{"type":"STRING","value":"wrong"}"""
         fun snapshot(default: String, rules: String = "[]") =
-            """{"flags":[{"key":"${namespace.enabled.id.plainId}","defaultValue":$default,"rules":$rules}]}"""
+            snapshotDocument("""{"flags":[{"key":"${namespace.enabled.id.plainId}","defaultValue":$default,"rules":$rules}]}""")
 
         assertIs<ParseResult.Success<*>>(namespace.fromJson(snapshot(boolean)))
-        for (invalid in listOf(snapshot(string), snapshot(boolean, """[{"value":$string}]"""))) {
+        for (invalid in listOf(snapshot(string), snapshot(boolean, """[{"value":$string,"conditions":[]}]"""))) {
             val failure = assertIs<ParseResult.Failure>(namespace.fromJson(invalid))
             assertIs<ParseError.InvalidSnapshot>(failure.error)
             assertEquals(true, namespace.enabled.evaluate(TestContext()))
