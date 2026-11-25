@@ -2,8 +2,8 @@ package io.amichne.konditional.types
 
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.fact.FactDomain
+import io.amichne.konditional.context.fact.FactSchema
 import io.amichne.konditional.context.fact.Facts
-import io.amichne.konditional.context.fact.SingleFact
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.result.parseFailure
@@ -23,10 +23,12 @@ class LeafTypesTest {
 
     @Test
     fun contextFactorySuppliesOnlyDeclaredFacts() {
-        val environment = SingleFact("environment", FactDomain.enumeration(TestEnvironment.entries) { it.id })
-        val context = Context(Facts.of(environment.value(TestEnvironment.PROD)))
+        val deployment = object : FactSchema() {
+            val environment = single("environment", FactDomain.enumeration(TestEnvironment.entries) { it.id })
+        }
+        val context = Context(Facts.of(deployment.environment.value(TestEnvironment.PROD)))
 
-        assertTrue(environment.oneOf(TestEnvironment.PROD).matches(context))
+        assertTrue(deployment.environment.oneOf(TestEnvironment.PROD).matches(context))
     }
 
     @Test

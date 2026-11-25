@@ -2,7 +2,7 @@ package io.amichne.konditional.json
 
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.fixtures.TestNamespace
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.core.types.Konstrained
@@ -24,7 +24,7 @@ class SnapshotValueTypeTest {
 
     @Test
     fun enumClassNamesResolveAgainstTheDeclaredEnumIncludingLegacyEntryNames() {
-        val namespace = object : Namespace.TestNamespaceFacade("json-enum-witness") {
+        val namespace = object : TestNamespace("json-enum-witness") {
             val mode by enum<Mode, Context>(default = Mode.FIRST)
         }
         fun snapshot(value: Mode, className: String) =
@@ -40,7 +40,7 @@ class SnapshotValueTypeTest {
 
     @Test
     fun konstrainedValuesMustMatchTheDeclaredClassAndRepresentation() {
-        val namespace = object : Namespace.TestNamespaceFacade("json-custom-witness") {
+        val namespace = object : TestNamespace("json-custom-witness") {
             val label by custom<Label, Context>(default = Label("old"))
             val retry by custom<RetryPolicy, Context>(default = RetryPolicy())
         }
@@ -60,7 +60,7 @@ class SnapshotValueTypeTest {
 
     @Test
     fun defaultsAndStaticRulesMustMatchTheDeclaredBoolean() {
-        val namespace = object : Namespace.TestNamespaceFacade("json-value-types") {
+        val namespace = object : TestNamespace("json-value-types") {
             val enabled by boolean<Context>(default = false)
         }
         val boolean = """{"type":"BOOLEAN","value":true}"""

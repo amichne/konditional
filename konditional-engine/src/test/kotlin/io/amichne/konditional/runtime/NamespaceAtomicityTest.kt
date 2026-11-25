@@ -8,6 +8,7 @@ import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationMetadata
 import io.amichne.konditional.core.registry.InMemoryNamespaceRegistry
 import io.amichne.konditional.fixtures.TestContext
+import io.amichne.konditional.fixtures.TestNamespace
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -73,7 +74,7 @@ class NamespaceAtomicityTest {
                     repeat(5_000) {
                         val snapshot = registry.currentSnapshot
                         val definition = snapshot.configuration.flags[namespace.flag]
-                            as? FlagDefinition<Boolean, Context, Namespace>
+                            as? FlagDefinition<Boolean, Context, Namespace<*>>
                             ?: error("missing feature definition")
                         val expectedVersion = if (definition.defaultValue) "v1" else "v2"
                         assertEquals(expectedVersion, snapshot.version)
@@ -104,7 +105,7 @@ class NamespaceAtomicityTest {
 
     private class AtomicNamespace(
         registry: InMemoryNamespaceRegistry,
-    ) : Namespace.TestNamespaceFacade(
+    ) : TestNamespace(
             id = "atomic",
             registry = registry,
             identifierSeed = "atomic-seed",

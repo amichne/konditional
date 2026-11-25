@@ -4,13 +4,23 @@ import io.amichne.konditional.context.ContextKey
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 
-/** A namespace's declaration of a typed input. Different declaration instances denote different facts. */
-sealed class Fact<T : Any> protected constructor(id: String, internal val domain: FactDomain<T>) {
-    /** Stable namespace-local key, independent of Kotlin names. */
+/**
+ * A schema's declaration of a typed input. Only a [FactSchema] can create one, so every fact has
+ * exactly one owner. Different declaration instances denote different facts.
+ */
+sealed class Fact<T : Any> protected constructor(
+    internal val schema: FactSchema,
+    id: String,
+    internal val domain: FactDomain<T>,
+) {
+    /** Stable schema-local key, independent of Kotlin names. */
     val key: ContextKey = ContextKey(id)
 
-    /** Matches a selected value equal to one of the supplied operands. Missing facts never match. */
+    /** Matches a supplied value equal to one of the operands. An absent fact never matches. */
     fun oneOf(first: T, vararg rest: T): FactExpression = membership(listOf(first) + rest)
+
+    /** Matches a supplied value equal to none of the operands. An absent fact never matches. */
+    fun noneOf(first: T, vararg rest: T): FactExpression = not(membership(listOf(first) + rest))
 
     internal fun membership(values: List<T>): FactExpression =
         Membership(this, immutableListCopy(values.distinct().sortedBy(domain.encode)))
@@ -19,26 +29,37 @@ sealed class Fact<T : Any> protected constructor(id: String, internal val domain
         is ParseResult.Success -> parsed
         is ParseResult.Failure -> ParseResult.Failure(ParseError.InvalidFactOperand(key, parsed.error))
     }
+
+    override fun toString(): String = "Fact(${key.id})"
 }
 
 /** A context can supply exactly one value for an assigned single-valued fact. */
-class SingleFact<T : Any>(id: String, domain: FactDomain<T>) : Fact<T>(id, domain) {
+class SingleFact<T : Any> internal constructor(
+    schema: FactSchema,
+    id: String,
+    domain: FactDomain<T>,
+) : Fact<T>(schema, id, domain) {
     /** Supplies this fact in a context. */
     fun value(value: T): FactValue<T> = FactValue(this, listOf(value))
 }
 
 /** Membership tests a set-valued fact for at least one common value. */
-class MultiFact<T : Any>(id: String, domain: FactDomain<T>) : Fact<T>(id, domain) {
+class MultiFact<T : Any> internal constructor(
+    schema: FactSchema,
+    id: String,
+    domain: FactDomain<T>,
+) : Fact<T>(schema, id, domain) {
     /** Copies the selection so later caller mutations cannot change the context. */
     fun values(values: Set<T>): FactValue<T> = FactValue(this, values)
 }
 
 /** A single-valued fact with a domain-defined, deterministic total order. */
-class OrderedFact<T : Any>(
+class OrderedFact<T : Any> internal constructor(
+    schema: FactSchema,
     id: String,
     domain: FactDomain<T>,
     internal val order: Comparator<T>,
-) : Fact<T>(id, domain) {
+) : Fact<T>(schema, id, domain) {
     /** Supplies the value to compare. */
     fun value(value: T): FactValue<T> = FactValue(this, listOf(value))
 

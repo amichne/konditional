@@ -30,7 +30,7 @@ data class CompiledNamespaceSchema internal constructor(
 
     companion object {
         @KonditionalInternalApi
-        fun from(namespace: Namespace): CompiledNamespaceSchema {
+        fun from(namespace: Namespace<*>): CompiledNamespaceSchema {
             val entries =
                 namespace
                     .allFeatures()
@@ -47,7 +47,7 @@ data class CompiledNamespaceSchema internal constructor(
     }
 }
 
-private fun Namespace.requireDeclaredDefinition(
+private fun Namespace<*>.requireDeclaredDefinition(
     feature: Feature<*, *, *>,
 ): FlagDefinition<*, *, *> =
     declaredDefinition(feature)

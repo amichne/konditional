@@ -46,9 +46,9 @@ internal object ConfigurationCodec {
     fun encode(configuration: Configuration): String =
         snapshotAdapter.toJson(SnapshotDocument(SnapshotFormat.FACTS_V1, SerializableSnapshot.from(configuration)))
 
-    fun encode(namespace: Namespace): String = encode(namespace.configuration)
+    fun encode(namespace: Namespace<*>): String = encode(namespace.configuration)
 
-    fun decode(json: String, namespace: Namespace): Result<Configuration> {
+    fun decode(json: String, namespace: Namespace<*>): Result<Configuration> {
         val document = try {
             JsonReader.of(Buffer().writeUtf8(json)).use { reader ->
                 // Moshi's generated adapters accept repeated properties. A repeated rule or condition

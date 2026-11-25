@@ -3,7 +3,7 @@ package io.amichne.konditional.engine
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.core.FlagDefinition
-import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.fixtures.TestNamespace
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationMetadata
@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
 class ConfigurationOwnershipTest {
     @Test
     fun installedAndRestoredConfigurationsOwnTheirFlagEntries() {
-        val namespace = object : Namespace.TestNamespaceFacade("configuration-ownership") {
+        val namespace = object : TestNamespace("configuration-ownership") {
             val number by integer<Context>(default = 1)
         }
         val flags = mutableMapOf<Feature<*, *, *>, FlagDefinition<*, *, *>>(

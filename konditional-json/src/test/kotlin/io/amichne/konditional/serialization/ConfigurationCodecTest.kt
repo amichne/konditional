@@ -3,8 +3,7 @@ package io.amichne.konditional.serialization
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.fixtures.Platform
-import io.amichne.konditional.fixtures.TestFacts
-import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.fixtures.TestNamespace
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.fixtures.RetryPolicy
@@ -64,21 +63,21 @@ class ConfigurationCodecTest {
         assertFalse(SecondaryFlags.enabled.evaluate(TestContext(platform = Platform.IOS)))
     }
 
-    private object SerializableFlags : Namespace.TestNamespaceFacade("json-main", factSchema = TestFacts.schema) {
+    private object SerializableFlags : TestNamespace("json-main") {
         val enabled by boolean<TestContext>(default = false) {
-            rule(true) { match(TestFacts.platform.oneOf(Platform.IOS)) }
+            rule(true) { platform.oneOf(Platform.IOS) }
         }
 
         val theme by enum<Theme, TestContext>(default = Theme.LIGHT) {
-            rule(Theme.DARK) { match(TestFacts.platform.oneOf(Platform.IOS)) }
+            rule(Theme.DARK) { platform.oneOf(Platform.IOS) }
         }
 
         val uiConfig by custom<RetryPolicy, TestContext>(default = RetryPolicy()) {
-            rule(RetryPolicy(mode = "ios")) { match(TestFacts.platform.oneOf(Platform.IOS)) }
+            rule(RetryPolicy(mode = "ios")) { platform.oneOf(Platform.IOS) }
         }
     }
 
-    private object SecondaryFlags : Namespace.TestNamespaceFacade("json-secondary") {
+    private object SecondaryFlags : TestNamespace("json-secondary") {
         val enabled by boolean<Context>(default = false)
     }
 

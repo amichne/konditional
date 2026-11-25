@@ -38,9 +38,10 @@ Declare the Kotlin type and its default in the namespace.
 
 ```kotlin
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.fact.NoFacts
 import io.amichne.konditional.core.Namespace
 
-object RetryFlags : Namespace("retry") {
+object RetryFlags : Namespace<NoFacts>("retry", NoFacts) {
     val retryPolicy by custom<RetryPolicy, Context>(
         default = RetryPolicy(),
     )

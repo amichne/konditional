@@ -6,7 +6,8 @@ A `Context` supplies the inputs that a feature can inspect.
 
 ## Declare facts for your domain
 
-A fact declares its value type and stable identifier. A namespace lists the facts its rules can use.
+A fact declares its value type and stable identifier. A `FactSchema` subclass declares the facts as properties.
+A namespace names one schema, and its rules can read only that schema's facts.
 Each evaluation context supplies the values for one decision.
 
 For example, a warehouse can accept a delivery when its zone is cold storage and its temperature is at most four degrees Celsius.
@@ -16,46 +17,59 @@ import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.fact.*
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.enableWhen
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 
 enum class Zone { COLD_STORAGE, LOADING_DOCK }
 @JvmInline value class Celsius(val degrees: Int)
 
-val zone = SingleFact("warehouse.zone", FactDomain.enumeration(Zone.entries) { it.name })
-val temperature = OrderedFact(
-    "warehouse.celsius",
-    FactDomain<Celsius>(
-        encode = { it.degrees.toString() },
-        decode = { raw ->
-            raw.toIntOrNull()?.let { ParseResult.Success(Celsius(it)) }
-                ?: ParseResult.Failure(ParseError.invalidValue("warehouse.celsius", "Expected whole degrees"))
-        },
-    ),
-    compareBy(Celsius::degrees),
-)
+object WarehouseFacts : FactSchema() {
+    val zone = single("warehouse.zone", FactDomain.enumeration(Zone.entries) { it.name })
+    val temperature = ordered(
+        "warehouse.celsius",
+        FactDomain<Celsius>(
+            encode = { it.degrees.toString() },
+            decode = { raw ->
+                raw.toIntOrNull()?.let { ParseResult.Success(Celsius(it)) }
+                    ?: ParseResult.Failure(ParseError.invalidValue("warehouse.celsius", "Expected whole degrees"))
+            },
+        ),
+        compareBy(Celsius::degrees),
+    )
+}
 
-object Warehouse : Namespace("warehouse", factSchema = FactSchema(zone, temperature)) {
+object Warehouse : Namespace<WarehouseFacts>("warehouse", WarehouseFacts) {
     val acceptDelivery by boolean<Context>(default = false) {
-        rule(true, allOf(zone.oneOf(Zone.COLD_STORAGE), temperature.atMost(Celsius(4))))
+        enableWhen { allOf(zone.oneOf(Zone.COLD_STORAGE), temperature.atMost(Celsius(4))) }
     }
 }
 
 data class Reading(val location: Zone, val measured: Celsius) : Context {
-    override val facts = Facts.of(zone.value(location), temperature.value(measured))
+    override val facts = Facts.of(
+        WarehouseFacts.zone.value(location),
+        WarehouseFacts.temperature.value(measured),
+    )
 }
 
 fun accept(location: Zone, measured: Celsius): Boolean =
     Warehouse.acceptDelivery.evaluate(Reading(location, measured))
 ```
 
-`SingleFact` accepts one value. Use `MultiFact` for a set, such as an operator's qualifications.
+`single` declares a fact with one value. Use `multi` for a set, such as an operator's qualifications.
 Its `oneOf` condition matches when the supplied set contains an allowed value.
-`OrderedFact` also supports inclusive `atLeast` and `atMost` comparisons.
-An absent fact makes a comparison miss.
+`ordered` also supports inclusive `atLeast` and `atMost` comparisons.
+
+## Absent facts
+
+A comparison over a fact that the context does not supply is unknown, and an unknown comparison does not match.
+`not` keeps it unknown. `not(zone.oneOf(Zone.COLD_STORAGE))` matches a reading in another zone.
+It does not match a context with no zone. An absent fact therefore cannot enable a rule.
 
 Snapshot export uses each fact's identifier and encoded operands. Keep both stable across applications that exchange rules.
 Supply a deterministic comparator and a decoder that accepts each value the encoder produces.
+
+To name a policy and use it in several flags, see [Reusable conditions](/guides/reusable-conditions).
 
 ## Stable identifiers and rollout
 

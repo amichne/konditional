@@ -15,7 +15,7 @@ val showNewCheckout = CheckoutFlags.newCheckout
 
 | API | Purpose |
 | --- | --- |
-| `Namespace` | Owns feature declarations, namespace identity, and runtime registry access |
+| `Namespace<S>` | Owns feature declarations, namespace identity, the fact schema `S`, and runtime registry access |
 | `Feature<T, C, M>` | Typed handle bound to a value type, context type, and namespace |
 | `boolean`, `string`, `integer`, `double`, `enum`, `custom` | Namespace delegates for declaring features |
 | `evaluate(context)` | Returns the typed feature value for the given context |
@@ -26,12 +26,28 @@ val showNewCheckout = CheckoutFlags.newCheckout
 | API | Purpose |
 | --- | --- |
 | `Context` | Base evaluation input |
-| `FactSchema` | Declares the facts a namespace accepts |
-| `SingleFact<T>`, `MultiFact<T>`, `OrderedFact<T>` | Declare a fact's value domain and supported operations |
+| `FactSchema` | Base class for a namespace's facts; `single`, `multi`, and `ordered` declare them |
+| `NoFacts` | Schema for a namespace whose rules read no facts |
+| `SingleFact<T>`, `MultiFact<T>`, `OrderedFact<T>` | A declared fact's value domain and supported comparisons |
+| `oneOf`, `noneOf`, `atLeast`, `atMost` | Build one portable comparison on a fact |
 | `Facts.of(...)` | Supplies typed fact values on a context |
-| `allOf(...)`, `anyOf(...)` | Combine portable fact comparisons |
+| `Condition<S>` | A reusable function from a schema, or an interface it implements, to one expression |
+| `allOf(...)`, `anyOf(...)`, `not(...)` | Combine expressions or conditions. `allOf` and `anyOf` reject an empty group |
+| `named(label, ...)` | Attaches a domain name that explanations and snapshots carry |
 | `Context.StableIdContext` | Opt-in stable identity for rollout and allowlists |
-| `Rollout` | Value type used by rollout-aware rules |
+| `Rollout` | Rollout percentage; `Rollout.of(25)` |
+
+## Rules
+
+Each form takes `rollout`, `note`, and `allowlist` as optional arguments.
+
+| API | Purpose |
+| --- | --- |
+| `rule(value, condition)`, `rule(value) { ... }` | Yields the value when the context satisfies the condition |
+| `always(value)` | Yields the value for every context inside the rollout |
+| `enableWhen`, `disableWhen` | Boolean forms of `rule` |
+| `enable`, `disable` | Boolean forms of `always` |
+| `ruleResolved`, `alwaysResolved` | Compute the value from the context after the rule matches. A snapshot cannot carry these rules |
 
 ## Runtime state
 

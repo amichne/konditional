@@ -1,147 +1,92 @@
-@file:OptIn(KonditionalInternalApi::class)
-
 package io.amichne.konditional.core.dsl
 
-import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.fact.FactExpression
-import io.amichne.konditional.core.Namespace
-import io.amichne.konditional.core.dsl.rules.ContextRuleScope
-import io.amichne.konditional.core.dsl.rules.NamespaceRuleSet
-import io.amichne.konditional.core.dsl.rules.RuleScope
-import io.amichne.konditional.core.dsl.rules.RuleSet
+import io.amichne.konditional.context.Rollout
+import io.amichne.konditional.context.fact.Condition
+import io.amichne.konditional.context.fact.FactSchema
+import io.amichne.konditional.core.dsl.rules.RuleValueResolver
 import io.amichne.konditional.core.id.StableId
 
 /**
- * DSL scope for flag configuration.
+ * Declares one flag: its default and the rules that can override it.
  *
- * This interface defines the public API for configuring individual feature flags.
- * Users cannot instantiate implementations create this interface directly - it is only
- * available as a receiver in DSL blocks through internal implementations.
+ * A rule pairs an outcome with at most one [Condition] over the namespace's facts [S]. The
+ * condition is bound to the namespace's schema when the flag is declared. If the bound expression
+ * uses a fact that another schema declared, the declaration fails before the flag is observable.
  *
- * Example usage:
+ * Every rule setting is an argument. No rule form takes a `Unit` block, so a comparison written
+ * where a rule expects its condition cannot be discarded.
+ *
  * ```kotlin
- * MyFeature.FEATURE_A with {
- *     default(true)
- *     salt("v2")
- *     disable  {
- *         match(environment.oneOf(PRODUCTION))
- *         rollout { 50.0 }
- *     }
+ * val acceptDelivery by boolean<Reading>(default = false) {
+ *     enableWhen(chilledDelivery, rollout = Rollout.of(25))
+ *     disableWhen { zone.oneOf(Zone.QUARANTINE) }
  * }
  * ```
  *
- * @param T The actual value type
- * @param C The contextFn type the flag evaluates against
- * @since 0.0.2
+ * @param T The flag's value type
+ * @param C The context type the flag evaluates against
+ * @param S The namespace's fact schema
  */
 @KonditionalDsl
-interface FlagScope<T : Any, C : Context, out M : Namespace> {
+@Suppress("TooManyFunctions")
+interface FlagScope<T : Any, C : Context, S : FactSchema> {
     val default: T
 
     fun active(block: () -> Boolean)
 
     /**
-     * Allows specific stable IDs to bypass rollout for all rules within this flag.
-     *
-     * When set, allowlisted users who match any rule's targeting criteria are always
-     * included in that rule's rollout, even if deterministic bucketing would
-     * otherwise exclude them.
-     *
-     * This is typically used to enable targeted access for internal testers while
-     * preserving rollout behavior for the rest of the population.
+     * Lets these stable IDs bypass rollout for every rule in this flag.
+     * An allowlisted ID still has to match the rule's condition.
      */
     fun allowlist(vararg stableIds: StableId)
 
-    /**
-     * Sets the salt value for the flag.
-     *
-     * Salt is used in hash-based rollout calculations. Changing the salt
-     * will redistribute users across rollout percentages.
-     *
-     * @param value The salt value (default is "v1")
-     */
+    /** Sets the salt used for rollout bucketing. Changing it redistributes stable IDs. Default "v1". */
     fun salt(value: String)
 
-    /**
-     * Includes rules from a pre-built [io.amichne.konditional.core.dsl.rules.RuleSet] targeting this same feature.
-     *
-     * Rule sets are composed in order of inclusion to preserve deterministic evaluation semantics.
-     *
-     * @param ruleSet The rule set to include.
-     */
-    fun include(ruleSet: RuleSet<in C, T, C, @UnsafeVariance M>)
-
-    /**
-     * Includes rules from a namespace-scoped [NamespaceRuleSet] that is not feature-bound.
-     */
-    fun include(ruleSet: NamespaceRuleSet<in C, T, C, @UnsafeVariance M>)
-
-    /**
-     * Defines a targeting rule with an associated return value.
-     *
-     * Rules determine which users receive which values based on context properties.
-     * The value is required, ensuring every rule has an associated return value
-     * at compile time.
-     *
-     * Example:
-     * ```kotlin
-     * enable  {
-     *     match(environment.oneOf(PRODUCTION))
-     *     rollout { 50.0 }
-     * }
-     * ```
-     *
-     * @param value The value to return when this rule matches
-     * @param build DSL block for configuring the rule's targeting criteria
-     */
+    /** Yields [value] when the context satisfies [condition] and falls inside [rollout]. */
     fun rule(
         value: T,
-        build: RuleScope<C>.() -> Unit = {},
+        condition: Condition<S>,
+        rollout: Rollout = Rollout.default,
+        note: String? = null,
+        allowlist: Set<StableId> = emptySet(),
     )
 
-    /** Yields [value] when the facts in the context satisfy [expression]. */
-    fun rule(value: T, expression: FactExpression) = rule(value) { match(expression) }
-
-    /**
-     * Defines a targeting rule using a composable, context-agnostic scope.
-     *
-     * This is useful when you want to expose only a subset of targeting mix-ins
-     * (for example, fact-only configuration) while still using the same rule builder.
-     *
-     * @param value The value to return when this rule matches
-     * @param build DSL block for configuring the rule's targeting criteria
-     */
-    @KonditionalInternalApi
-    fun ruleScoped(
+    /** The same rule with the condition written inline: `rule(value) { channel.oneOf(PILOT) }`. */
+    fun rule(
         value: T,
-        build: ContextRuleScope<C>.() -> Unit = {},
+        rollout: Rollout = Rollout.default,
+        note: String? = null,
+        allowlist: Set<StableId> = emptySet(),
+        inlineCondition: @KonditionalDsl Condition<S>,
+    ) = rule(value, inlineCondition, rollout, note, allowlist)
+
+    /** Yields [value] for every context that falls inside [rollout]. Ranks below every conditional rule. */
+    fun always(
+        value: T,
+        rollout: Rollout = Rollout.default,
+        note: String? = null,
+        allowlist: Set<StableId> = emptySet(),
     )
 
     /**
-     * Defines a targeting rule in a criteria-first form that can be completed by yielding a value.
-     *
-     * This exists as syntactic sugar over [rule] to improve readability for complex values:
-     * ```kotlin
-     * rule {
-     *     match(environment.oneOf(PRODUCTION))
-     * } yields "production"
-     * ```
-     *
-     * Semantics:
-     * - `rule { ... } yields VALUE` ≡ `rule(VALUE) { ... }`
-     * - `rule { ... } yields { resolver() }` resolves the value lazily when the rule matches
+     * Like [rule], with the value computed from the evaluation context after the rule matches.
+     * A snapshot cannot carry a computed value, so exporting this flag fails.
      */
-    fun rule(build: RuleScope<C>.() -> Unit): RuleScope.Prefix<T, C, M> = RuleScope.Prefix(this, build)
+    fun ruleResolved(
+        condition: Condition<S>,
+        rollout: Rollout = Rollout.default,
+        note: String? = null,
+        allowlist: Set<StableId> = emptySet(),
+        value: RuleValueResolver<C, T>,
+    )
 
-    /**
-     * Defines a targeting rule in a criteria-first form using a composable scope.
-     *
-     * Semantics:
-     * - `ruleScoped { ... } yields VALUE` ≡ `ruleScoped(VALUE) { ... }`
-     * - `ruleScoped { ... } yields { resolver() }` resolves the value lazily when the rule matches
-     */
-    @KonditionalInternalApi
-    fun ruleScoped(build: ContextRuleScope<C>.() -> Unit): RuleScope.ScopedPrefix<T, C, M> =
-        RuleScope.ScopedPrefix(this, build)
+    /** Like [always], with the value computed from the evaluation context. */
+    fun alwaysResolved(
+        rollout: Rollout = Rollout.default,
+        note: String? = null,
+        allowlist: Set<StableId> = emptySet(),
+        value: RuleValueResolver<C, T>,
+    )
 }

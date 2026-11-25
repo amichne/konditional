@@ -33,7 +33,7 @@ data class ConditionalValue<T : Any, C : Context> private constructor(
     internal fun resolve(
         context: C,
         registry: EvaluationSnapshot,
-        ownerNamespace: Namespace,
+        ownerNamespace: Namespace<*>,
     ): T = resolver.resolve(
         context = context,
         registry = registry,
@@ -46,7 +46,7 @@ data class ConditionalValue<T : Any, C : Context> private constructor(
         fun resolve(
             context: C,
             registry: EvaluationSnapshot,
-            ownerNamespace: Namespace,
+            ownerNamespace: Namespace<*>,
         ): T
 
         fun staticValueOrNull(): T?
@@ -58,7 +58,7 @@ data class ConditionalValue<T : Any, C : Context> private constructor(
         override fun resolve(
             context: C,
             registry: EvaluationSnapshot,
-            ownerNamespace: Namespace,
+            ownerNamespace: Namespace<*>,
         ): T = value
 
         override fun staticValueOrNull(): T = value
@@ -70,7 +70,7 @@ data class ConditionalValue<T : Any, C : Context> private constructor(
         override fun resolve(
             context: C,
             registry: EvaluationSnapshot,
-            ownerNamespace: Namespace,
+            ownerNamespace: Namespace<*>,
         ): T = RuleValueScope(
             context = context,
             evaluationRegistry = registry,

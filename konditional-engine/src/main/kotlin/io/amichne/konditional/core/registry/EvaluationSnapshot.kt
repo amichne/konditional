@@ -13,8 +13,8 @@ internal class EvaluationSnapshot(val registry: NamespaceRegistry) {
     val version get() = snapshot.version
     val allDisabled get() = snapshot.allDisabled
 
-    fun <T : Any, C : Context, M : Namespace> flag(feature: Feature<T, C, M>): FlagDefinition<T, C, M> =
+    fun <T : Any, C : Context, M : Namespace<*>> flag(feature: Feature<T, C, M>): FlagDefinition<T, C, M> =
         snapshot.configuration.flags.definitionFor(feature)
-            ?: (registry as? Namespace)?.declaredDefinition(feature)
+            ?: (registry as? Namespace<*>)?.declaredDefinition(feature)
             ?: error("Flag not found for feature '${feature.key}' in namespace '$namespaceId'.")
 }

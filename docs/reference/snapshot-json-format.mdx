@@ -75,12 +75,20 @@ Each rule entry can carry these fields.
 | `conditions` | Required ordered array of expressions. Every condition must match. An empty array matches any context. |
 
 Snapshot rules contain static values and portable fact expressions.
-If a rule uses a Kotlin predicate or a contextual value resolver, `toJson()` throws `KonditionalBoundaryFailure` with `ParseError.InvalidSnapshot`.
+If a rule computes its value with `ruleResolved` or `alwaysResolved`, `toJson()` throws `KonditionalBoundaryFailure` with `ParseError.InvalidSnapshot`.
 The error identifies the feature and rule.
 
 ## Portable fact expressions
 
-`all` and `anyOf` contain ordered arrays of expressions.
+`all` and `anyOf` contain ordered arrays of expressions. An empty array rejects the import.
 `oneOf` accepts a list of operands. Each inclusive comparison, `atLeast` or `atMost`, accepts one operand.
+`not` contains one expression. It matches when the context supplies the facts that expression reads and the expression does not hold.
+`named` contains a nonblank `label` and a `term`. The label is the name the author gave the condition. It does not affect matching.
+
+```json
+{ "named": { "label": "outsideCanada",
+             "term": { "not": { "oneOf": { "fact": "locale", "operands": ["CANADA"] } } } } }
+```
+
 The receiving namespace resolves each fact identifier and parses its operands in that fact's domain.
 An unknown fact, unsupported comparison, or invalid operand rejects the entire import.

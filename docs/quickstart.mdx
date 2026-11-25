@@ -7,8 +7,9 @@ Use the Kotlin/JVM module from [Add the engine to your project](/quickstart/inst
 
 ## Declare the flag
 
-Create `src/main/kotlin/Checkout.kt` in your application module. A namespace
-groups related flags. Here, the account supplies its release channel, and the checkout namespace declares the channel as a fact.
+Create `src/main/kotlin/Checkout.kt` in your application module. A fact schema
+declares the inputs that rules can read. Here, `AccountFacts` declares the release channel, and the account supplies its value.
+A namespace groups related flags and names the schema they use.
 
 ```kotlin
 import io.amichne.konditional.api.evaluate
@@ -16,22 +17,27 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.fact.FactDomain
 import io.amichne.konditional.context.fact.FactSchema
 import io.amichne.konditional.context.fact.Facts
-import io.amichne.konditional.context.fact.SingleFact
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.enableWhen
 
 enum class Channel { PILOT, GENERAL }
-val channel = SingleFact("account.channel", FactDomain.enumeration(Channel.entries) { it.name })
 
-data class Account(val releaseChannel: Channel) : Context {
-    override val facts = Facts.of(channel.value(releaseChannel))
+object AccountFacts : FactSchema() {
+    val channel = single("account.channel", FactDomain.enumeration(Channel.entries) { it.name })
 }
 
-object CheckoutFlags : Namespace("checkout", factSchema = FactSchema(channel)) {
+data class Account(val releaseChannel: Channel) : Context {
+    override val facts = Facts.of(AccountFacts.channel.value(releaseChannel))
+}
+
+object CheckoutFlags : Namespace<AccountFacts>("checkout", AccountFacts) {
     val newCheckout by boolean<Account>(default = false) {
-        rule(true, channel.oneOf(Channel.PILOT))
+        enableWhen { channel.oneOf(Channel.PILOT) }
     }
 }
 ```
+
+Inside `enableWhen`, `channel` is the fact that `AccountFacts` declares.
 
 ## Evaluate it
 

@@ -39,6 +39,6 @@ data class ConfigurationMetadata(
 
 // A heterogeneous flag table erases the type shared by each feature and its definition.
 @Suppress("UNCHECKED_CAST")
-internal fun <T : Any, C : Context, M : Namespace>
+internal fun <T : Any, C : Context, M : Namespace<*>>
     Map<Feature<*, *, *>, FlagDefinition<*, *, *>>.definitionFor(feature: Feature<T, C, M>): FlagDefinition<T, C, M>? =
     this[feature] as FlagDefinition<T, C, M>?

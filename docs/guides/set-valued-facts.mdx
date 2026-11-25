@@ -3,7 +3,7 @@ title: "Match a set of values"
 description: "Declare a fact that accepts several values in one context."
 ---
 
-A warehouse operator can hold several qualifications. Use a `MultiFact` when each context can supply a set of values.
+A warehouse operator can hold several qualifications. Declare the fact with `multi` when each context can supply a set of values.
 This rule permits inspection when the operator has either a cold storage or food safety qualification.
 
 ```kotlin
@@ -11,22 +11,27 @@ import io.amichne.konditional.context.Context
 import io.amichne.konditional.context.fact.FactDomain
 import io.amichne.konditional.context.fact.FactSchema
 import io.amichne.konditional.context.fact.Facts
-import io.amichne.konditional.context.fact.MultiFact
 import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.enableWhen
 
 enum class Qualification { COLD_STORAGE, FOOD_SAFETY, SHIPPING }
-val qualifications = MultiFact("operator.qualifications", FactDomain.enumeration(Qualification.entries) { it.name })
 
-data class Operator(val holds: Set<Qualification>) : Context {
-    override val facts = Facts.of(qualifications.values(holds))
+object OperatorFacts : FactSchema() {
+    val qualifications = multi("operator.qualifications", FactDomain.enumeration(Qualification.entries) { it.name })
 }
 
-object Inspections : Namespace("inspections", factSchema = FactSchema(qualifications)) {
+data class Operator(val holds: Set<Qualification>) : Context {
+    override val facts = Facts.of(OperatorFacts.qualifications.values(holds))
+}
+
+object Inspections : Namespace<OperatorFacts>("inspections", OperatorFacts) {
     val canInspect by boolean<Operator>(default = false) {
-        rule(true, qualifications.oneOf(Qualification.COLD_STORAGE, Qualification.FOOD_SAFETY))
+        enableWhen { qualifications.oneOf(Qualification.COLD_STORAGE, Qualification.FOOD_SAFETY) }
     }
 }
 ```
 
 An operator with only `SHIPPING` gets the default. An operator with both `SHIPPING` and `FOOD_SAFETY` qualifies.
+`qualifications.noneOf(Qualification.SHIPPING)` matches an operator whose supplied set excludes `SHIPPING`, including an empty set.
+It does not match a context that supplies no qualifications fact.
 For ordered and single-valued facts, see [Context and facts](/concepts/context-and-facts).

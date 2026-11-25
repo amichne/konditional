@@ -26,20 +26,22 @@ import kotlin.reflect.KProperty
 
 /**
  * Namespace-scoped feature container with atomic runtime state.
+ *
+ * [facts] is the one vocabulary this namespace's rules can read. Flag declarations receive it as
+ * the receiver of every condition, and snapshots resolve their fact identifiers against it.
+ * A namespace whose rules read no facts uses [io.amichne.konditional.context.fact.NoFacts].
  */
-open class Namespace private constructor(
-    val id: NamespaceId = defaultNamespaceId(),
+open class Namespace<S : FactSchema> private constructor(
+    val id: NamespaceId,
+    val facts: S,
     @property:KonditionalInternalApi
     val registry: NamespaceRegistry = InMemoryNamespaceRegistry(namespaceId = id.value),
     @PublishedApi internal val identifierSeed: NamespaceId.Seed = id.seed(),
-    val factSchema: FactSchema = FactSchema(),
 ) : NamespaceRegistry by registry {
-    constructor() : this(defaultNamespaceId())
+    /** Infers the namespace identifier from the declaring class name. */
+    constructor(facts: S) : this(defaultNamespaceId(), facts)
 
-    constructor(id: String) : this(NamespaceId(id))
-
-    /** Declares the facts available to Kotlin rules and snapshots in this namespace. */
-    constructor(id: String, factSchema: FactSchema) : this(NamespaceId(id), factSchema = factSchema)
+    constructor(id: String, facts: S) : this(NamespaceId(id), facts)
 
     private val features = mutableListOf<Feature<*, *, *>>()
     private val declaredDefaults = linkedMapOf<Feature<*, *, *>, Any>()
@@ -51,7 +53,9 @@ open class Namespace private constructor(
     fun declaredDefault(feature: Feature<*, *, *>): Any? = declaredDefaults[feature]
 
     @KonditionalInternalApi
-    fun <T : Any, C : Context, M : Namespace> declaredDefinition(feature: Feature<T, C, M>): FlagDefinition<T, C, M>? =
+    fun <T : Any, C : Context, M : Namespace<*>> declaredDefinition(
+        feature: Feature<T, C, M>,
+    ): FlagDefinition<T, C, M>? =
         declaredDefinitions.definitionFor(feature)
 
     override val configuration: Configuration
@@ -60,13 +64,13 @@ open class Namespace private constructor(
             return installed.copy(flags = declaredDefinitions + installed.flags)
         }
 
-    override fun <T : Any, C : Context, M : Namespace> flag(
+    override fun <T : Any, C : Context, M : Namespace<*>> flag(
         key: Feature<T, C, M>,
     ): FlagDefinition<T, C, M> =
         findFlag(key)
             ?: error("Flag not found for feature '${key.key}' in namespace '$id'.")
 
-    override fun <T : Any, C : Context, M : Namespace> findFlag(
+    override fun <T : Any, C : Context, M : Namespace<*>> findFlag(
         key: Feature<T, C, M>,
     ): FlagDefinition<T, C, M>? =
         registry.findFlag(key)
@@ -74,40 +78,40 @@ open class Namespace private constructor(
 
     protected fun <C : Context> boolean(
         default: Boolean,
-        flagScope: FlagScope<Boolean, C, Namespace>.() -> Unit = {},
-    ): BooleanDelegate<C> = BooleanDelegate(default, flagScope)
+        flagScope: FlagScope<Boolean, C, S>.() -> Unit = {},
+    ): BooleanDelegate<C, S> = BooleanDelegate(default, flagScope)
 
     protected fun <C : Context> string(
         default: String,
-        stringScope: FlagScope<String, C, Namespace>.() -> Unit = {},
-    ): StringDelegate<C> = StringDelegate(default, stringScope)
+        stringScope: FlagScope<String, C, S>.() -> Unit = {},
+    ): StringDelegate<C, S> = StringDelegate(default, stringScope)
 
     protected fun <C : Context> integer(
         default: Int,
-        integerScope: FlagScope<Int, C, Namespace>.() -> Unit = {},
-    ): IntDelegate<C> = IntDelegate(default, integerScope)
+        integerScope: FlagScope<Int, C, S>.() -> Unit = {},
+    ): IntDelegate<C, S> = IntDelegate(default, integerScope)
 
     protected fun <C : Context> double(
         default: Double,
-        decimalScope: FlagScope<Double, C, Namespace>.() -> Unit = {},
-    ): DoubleDelegate<C> = DoubleDelegate(default, decimalScope)
+        decimalScope: FlagScope<Double, C, S>.() -> Unit = {},
+    ): DoubleDelegate<C, S> = DoubleDelegate(default, decimalScope)
 
     protected fun <E : Enum<E>, C : Context> enum(
         default: E,
-        enumScope: FlagScope<E, C, Namespace>.() -> Unit = {},
-    ): EnumDelegate<E, C> = EnumDelegate(default, enumScope)
+        enumScope: FlagScope<E, C, S>.() -> Unit = {},
+    ): EnumDelegate<E, C, S> = EnumDelegate(default, enumScope)
 
     protected inline fun <reified T : Konstrained, C : Context> custom(
         default: T,
-        noinline customScope: FlagScope<T, C, Namespace>.() -> Unit = {},
-    ): KotlinClassDelegate<T, C> = KotlinClassDelegate(default, customScope)
+        noinline customScope: FlagScope<T, C, S>.() -> Unit = {},
+    ): KotlinClassDelegate<T, C, S> = KotlinClassDelegate(default, customScope)
 
     @Suppress("LongParameterList")
-    private inline fun <T : Any, C : Context, M : Namespace, F : Feature<T, C, M>, D> registerFeature(
+    private inline fun <T : Any, C : Context, M : Namespace<S>, F : Feature<T, C, M>, D> registerFeature(
         thisRef: M,
         property: KProperty<*>,
         default: T,
-        configScope: FlagScope<T, C, Namespace>.() -> Unit,
+        configScope: FlagScope<T, C, S>.() -> Unit,
         featureFactory: (String, M) -> F,
         featureSetter: (F) -> Unit,
         delegateInstance: D,
@@ -116,7 +120,7 @@ open class Namespace private constructor(
             featureFactory(property.name, thisRef).also { feature ->
                 val definition = FlagBuilder(default, feature).apply(configScope).build()
                 featureSetter(feature)
-                (thisRef as Namespace).features += feature
+                thisRef.features += feature
                 thisRef.declaredDefaults[feature] = default
                 thisRef.declaredDefinitions[feature] = definition
                 FeatureRegistrationHooks.notifyFeatureDefined(feature)
@@ -124,13 +128,13 @@ open class Namespace private constructor(
         }
 
     @Suppress("UNCHECKED_CAST")
-    protected class BooleanDelegate<C : Context>(
+    protected class BooleanDelegate<C : Context, S : FactSchema>(
         private val default: Boolean,
-        private val configScope: FlagScope<Boolean, C, Namespace>.() -> Unit,
+        private val configScope: FlagScope<Boolean, C, S>.() -> Unit,
     ) {
         private lateinit var feature: BooleanFeature<C, *>
 
-        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): BooleanDelegate<C> =
+        operator fun <M : Namespace<S>> provideDelegate(thisRef: M, property: KProperty<*>): BooleanDelegate<C, S> =
             thisRef.registerFeature(
                 thisRef = thisRef,
                 property = property,
@@ -141,18 +145,18 @@ open class Namespace private constructor(
                 delegateInstance = this,
             )
 
-        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): BooleanFeature<C, M> =
+        operator fun <M : Namespace<S>> getValue(thisRef: M, property: KProperty<*>): BooleanFeature<C, M> =
             feature as BooleanFeature<C, M>
     }
 
     @Suppress("UNCHECKED_CAST")
-    protected class StringDelegate<C : Context>(
+    protected class StringDelegate<C : Context, S : FactSchema>(
         private val default: String,
-        private val configScope: FlagScope<String, C, Namespace>.() -> Unit,
+        private val configScope: FlagScope<String, C, S>.() -> Unit,
     ) {
         private lateinit var feature: StringFeature<C, *>
 
-        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): StringDelegate<C> =
+        operator fun <M : Namespace<S>> provideDelegate(thisRef: M, property: KProperty<*>): StringDelegate<C, S> =
             thisRef.registerFeature(
                 thisRef = thisRef,
                 property = property,
@@ -163,18 +167,18 @@ open class Namespace private constructor(
                 delegateInstance = this,
             )
 
-        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): StringFeature<C, M> =
+        operator fun <M : Namespace<S>> getValue(thisRef: M, property: KProperty<*>): StringFeature<C, M> =
             feature as StringFeature<C, M>
     }
 
     @Suppress("UNCHECKED_CAST")
-    protected class IntDelegate<C : Context>(
+    protected class IntDelegate<C : Context, S : FactSchema>(
         private val default: Int,
-        private val configScope: FlagScope<Int, C, Namespace>.() -> Unit,
+        private val configScope: FlagScope<Int, C, S>.() -> Unit,
     ) {
         private lateinit var feature: IntFeature<C, *>
 
-        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): IntDelegate<C> =
+        operator fun <M : Namespace<S>> provideDelegate(thisRef: M, property: KProperty<*>): IntDelegate<C, S> =
             thisRef.registerFeature(
                 thisRef = thisRef,
                 property = property,
@@ -185,18 +189,18 @@ open class Namespace private constructor(
                 delegateInstance = this,
             )
 
-        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): IntFeature<C, M> =
+        operator fun <M : Namespace<S>> getValue(thisRef: M, property: KProperty<*>): IntFeature<C, M> =
             feature as IntFeature<C, M>
     }
 
     @Suppress("UNCHECKED_CAST")
-    protected class DoubleDelegate<C : Context>(
+    protected class DoubleDelegate<C : Context, S : FactSchema>(
         private val default: Double,
-        private val configScope: FlagScope<Double, C, Namespace>.() -> Unit,
+        private val configScope: FlagScope<Double, C, S>.() -> Unit,
     ) {
         private lateinit var feature: DoubleFeature<C, *>
 
-        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): DoubleDelegate<C> =
+        operator fun <M : Namespace<S>> provideDelegate(thisRef: M, property: KProperty<*>): DoubleDelegate<C, S> =
             thisRef.registerFeature(
                 thisRef = thisRef,
                 property = property,
@@ -207,18 +211,18 @@ open class Namespace private constructor(
                 delegateInstance = this,
             )
 
-        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): DoubleFeature<C, M> =
+        operator fun <M : Namespace<S>> getValue(thisRef: M, property: KProperty<*>): DoubleFeature<C, M> =
             feature as DoubleFeature<C, M>
     }
 
     @Suppress("UNCHECKED_CAST")
-    protected class EnumDelegate<E : Enum<E>, C : Context>(
+    protected class EnumDelegate<E : Enum<E>, C : Context, S : FactSchema>(
         private val default: E,
-        private val configScope: FlagScope<E, C, Namespace>.() -> Unit,
+        private val configScope: FlagScope<E, C, S>.() -> Unit,
     ) {
         private lateinit var feature: EnumFeature<E, C, *>
 
-        operator fun <M : Namespace> provideDelegate(thisRef: M, property: KProperty<*>): EnumDelegate<E, C> =
+        operator fun <M : Namespace<S>> provideDelegate(thisRef: M, property: KProperty<*>): EnumDelegate<E, C, S> =
             thisRef.registerFeature(
                 thisRef = thisRef,
                 property = property,
@@ -229,21 +233,21 @@ open class Namespace private constructor(
                 delegateInstance = this,
             )
 
-        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): EnumFeature<E, C, M> =
+        operator fun <M : Namespace<S>> getValue(thisRef: M, property: KProperty<*>): EnumFeature<E, C, M> =
             feature as EnumFeature<E, C, M>
     }
 
     @Suppress("UNCHECKED_CAST")
-    protected class KotlinClassDelegate<T : Konstrained, C : Context>(
+    protected class KotlinClassDelegate<T : Konstrained, C : Context, S : FactSchema>(
         private val default: T,
-        private val configScope: FlagScope<T, C, Namespace>.() -> Unit,
+        private val configScope: FlagScope<T, C, S>.() -> Unit,
     ) {
         private lateinit var feature: KotlinClassFeature<T, C, *>
 
-        operator fun <M : Namespace> provideDelegate(
+        operator fun <M : Namespace<S>> provideDelegate(
             thisRef: M,
             property: KProperty<*>,
-        ): KotlinClassDelegate<T, C> =
+        ): KotlinClassDelegate<T, C, S> =
             thisRef.registerFeature(
                 thisRef = thisRef,
                 property = property,
@@ -254,26 +258,24 @@ open class Namespace private constructor(
                 delegateInstance = this,
             )
 
-        operator fun <M : Namespace> getValue(thisRef: M, property: KProperty<*>): KotlinClassFeature<T, C, M> =
+        operator fun <M : Namespace<S>> getValue(thisRef: M, property: KProperty<*>): KotlinClassFeature<T, C, M> =
             feature as KotlinClassFeature<T, C, M>
     }
 
-    abstract class TestNamespaceFacade(
+    abstract class TestNamespaceFacade<S : FactSchema>(
         id: String,
+        facts: S,
         registry: NamespaceRegistry = InMemoryNamespaceRegistry(namespaceId = id),
         identifierSeed: String = UUID.randomUUID().toString(),
-        factSchema: FactSchema = FactSchema(),
-    ) : Namespace(
+    ) : Namespace<S>(
             id = NamespaceId(id),
+            facts = facts,
             registry = registry,
             identifierSeed = NamespaceId.Seed(identifierSeed),
-            factSchema = factSchema,
-        ) {
-        constructor(id: NamespaceId) : this(id = id.value)
-    }
+        )
 
     override fun equals(other: Any?): Boolean =
-        other is Namespace && id == other.id
+        other is Namespace<*> && id == other.id
 
     override fun hashCode(): Int = id.hashCode()
 
@@ -294,7 +296,7 @@ open class Namespace private constructor(
 
             return NamespaceId(
                 requireNotNull(inferredClassName) {
-                    "Unable to infer namespace id. Provide Namespace(\"<stable-id>\") explicitly."
+                    "Unable to infer namespace id. Provide Namespace(\"<stable-id>\", facts) explicitly."
                 },
             )
         }

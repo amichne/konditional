@@ -36,7 +36,8 @@
             "group": "Target users",
             "pages": [
               "quickstart/add-rollout",
-              "guides/set-valued-facts"
+              "guides/set-valued-facts",
+              "guides/reusable-conditions"
             ]
           },
           {

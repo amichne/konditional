@@ -19,9 +19,9 @@ import io.amichne.konditional.core.types.Konstrained
  *     val enabled: Boolean = true
  * ) : Konstrained.Object
  *
- * object Payments : Namespace("payments") {
- *     val PAYMENT_CONFIG by custom(default = PaymentConfig()) {
- *         rule(PaymentConfig(maxRetries = 5, timeout = 60.0)) { match(environment.oneOf(PRODUCTION)) }
+ * object Payments : Namespace<DeploymentFacts>("payments", DeploymentFacts) {
+ *     val paymentConfig by custom<PaymentConfig, Context>(default = PaymentConfig()) {
+ *         rule(PaymentConfig(maxRetries = 5, timeout = 60.0)) { environment.oneOf(PRODUCTION) }
  *     }
  * }
  * ```
@@ -30,7 +30,7 @@ import io.amichne.konditional.core.types.Konstrained
  * @param C The context type used for evaluation
  * @param M The namespace this feature belongs to
  */
-sealed interface KotlinClassFeature<T : Konstrained, C : Context, M : Namespace> :
+sealed interface KotlinClassFeature<T : Konstrained, C : Context, M : Namespace<*>> :
     Feature<T, C, M> {
 
     companion object {
@@ -41,14 +41,14 @@ sealed interface KotlinClassFeature<T : Konstrained, C : Context, M : Namespace>
          * @param module The namespace this feature belongs to
          * @return A KotlinClassFeature instance
          */
-        operator fun <T : Konstrained, C : Context, M : Namespace> invoke(
+        operator fun <T : Konstrained, C : Context, M : Namespace<*>> invoke(
             key: String,
             module: M,
         ): KotlinClassFeature<T, C, M> =
             KotlinClassFeatureImpl(key, module)
 
         @PublishedApi
-        internal data class KotlinClassFeatureImpl<T : Konstrained, C : Context, M : Namespace>(
+        internal data class KotlinClassFeatureImpl<T : Konstrained, C : Context, M : Namespace<*>>(
             override val key: String,
             override val namespace: M,
         ) : KotlinClassFeature<T, C, M>, Identifiable.ById by Identifiable.ById(key, namespace.id)

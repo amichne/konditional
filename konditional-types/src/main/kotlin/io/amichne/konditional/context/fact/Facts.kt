@@ -13,8 +13,9 @@ class FactValue<T : Any> internal constructor(internal val fact: Fact<T>, values
 
 /** Immutable assignments, keyed by declaration identity. An undeclared assignment cannot satisfy a rule. */
 class Facts private constructor(private val assignments: Map<Fact<*>, FactValue<*>>) {
-    internal fun <T : Any> matches(fact: Fact<T>, predicate: (T) -> Boolean): Boolean =
-        assignments[fact]?.values.orEmpty().any { predicate(fact.domain.typed(it)) }
+    /** The values supplied for [fact], or null when the context does not supply it. */
+    internal fun <T : Any> valuesOf(fact: Fact<T>): List<T>? =
+        assignments[fact]?.values?.map(fact.domain::typed)
 
     companion object {
         /** Empty selection for contexts that supply no facts. */
