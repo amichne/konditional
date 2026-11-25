@@ -7,7 +7,7 @@ import io.amichne.konditional.core.dsl.KonditionalDsl
  * DSL scope for [io.amichne.konditional.rules.targeting.Targeting.AnyOf] blocks.
  *
  * Exposes all targeting dimension mix-ins without rule-metadata concerns
- * ([StableIdTargetingScope], [io.amichne.konditional.core.dsl.rules.NoteScope], rampUp).
+ * ([StableIdTargetingScope], [io.amichne.konditional.core.dsl.rules.NoteScope], rollout).
  *
  * Each call inside an `anyOf { }` block adds one alternative. A group of fact
  * comparisons produces the same portable expression as the function `anyOf(...)`.

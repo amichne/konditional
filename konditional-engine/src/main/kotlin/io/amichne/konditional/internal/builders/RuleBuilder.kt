@@ -3,7 +3,7 @@
 package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.fact.FactExpression
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.dsl.rules.RuleScope
@@ -33,7 +33,7 @@ internal class RuleBuilder<C : Context>(
     NarrowingTargetingScope<C> {
     private val leaves = mutableListOf<Targeting<C>>()
     private var note: String? = null
-    private var rampUp: RampUp? = null
+    private var rollout: Rollout? = null
     private val allowlist = linkedSetOf<HexId>()
 
     override fun match(expression: FactExpression) {
@@ -76,13 +76,13 @@ internal class RuleBuilder<C : Context>(
         note = text
     }
 
-    override fun rampUp(function: () -> Number) {
-        this.rampUp = RampUp.of(function().toDouble())
+    override fun rollout(function: () -> Number) {
+        this.rollout = Rollout.of(function().toDouble())
     }
 
     internal fun build(): Rule<C> = Rule(
-        rampUp = rampUp ?: RampUp.default,
-        rampUpAllowlist = allowlist,
+        rollout = rollout ?: Rollout.default,
+        rolloutAllowlist = allowlist,
         note = note,
         targeting = Targeting.All(leaves.toList()),
         ruleId = ruleId,

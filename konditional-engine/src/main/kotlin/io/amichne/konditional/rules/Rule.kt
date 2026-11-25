@@ -1,13 +1,13 @@
 package io.amichne.konditional.rules
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.core.id.HexId
 import io.amichne.konditional.rules.targeting.Targeting
 import io.amichne.konditional.values.RuleId
 
 /**
- * A composable rule that combines a structured [Targeting] tree with rampUp metadata.
+ * A composable rule that combines a structured [Targeting] tree with rollout metadata.
  *
  * ## Evaluation contract
  * `matches(ctx)` iff `targeting.matches(ctx)` — all extension and capability-narrowed
@@ -21,16 +21,16 @@ import io.amichne.konditional.values.RuleId
  * Same [targeting] + same context produces the same result. No ambient state, no randomness.
  *
  * @param C The context type this rule evaluates against.
- * @property rampUp Percentage (0-100) of matching contexts that receive the value.
- * @property rampUpAllowlist Stable IDs that always bypass rampUp.
+ * @property rollout Percentage (0-100) of matching contexts that receive the value.
+ * @property rolloutAllowlist Stable IDs that always bypass rollout.
  * @property note Optional human-readable description for observability.
  * @property targeting Structured AND-conjunction of targeting constraints.
  * @property ruleId Stable UUID identity for this rule across serialization round-trips.
  */
 @ConsistentCopyVisibility
 data class Rule<in C : Context> internal constructor(
-    val rampUp: RampUp = RampUp.default,
-    internal val rampUpAllowlist: Set<HexId> = emptySet(),
+    val rollout: Rollout = Rollout.default,
+    internal val rolloutAllowlist: Set<HexId> = emptySet(),
     val note: String? = null,
     val targeting: Targeting.All<@UnsafeVariance C> = Targeting.catchAll(),
     val ruleId: RuleId = RuleId.unspecified,

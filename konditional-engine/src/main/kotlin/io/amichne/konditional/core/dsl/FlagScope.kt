@@ -26,7 +26,7 @@ import io.amichne.konditional.core.id.StableId
  *     salt("v2")
  *     disable  {
  *         match(environment.oneOf(PRODUCTION))
- *         rampUp { 50.0 }
+ *         rollout { 50.0 }
  *     }
  * }
  * ```
@@ -42,22 +42,22 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
     fun active(block: () -> Boolean)
 
     /**
-     * Allows specific stable IDs to bypass rampUp for all rules within this flag.
+     * Allows specific stable IDs to bypass rollout for all rules within this flag.
      *
      * When set, allowlisted users who match any rule's targeting criteria are always
-     * treated as in-rampUp for that rule, even if deterministic bucketing would
+     * included in that rule's rollout, even if deterministic bucketing would
      * otherwise exclude them.
      *
      * This is typically used to enable targeted access for internal testers while
-     * preserving rampUp behavior for the rest of the population.
+     * preserving rollout behavior for the rest of the population.
      */
     fun allowlist(vararg stableIds: StableId)
 
     /**
      * Sets the salt value for the flag.
      *
-     * Salt is used in hash-based rampUp calculations. Changing the salt
-     * will redistribute users across rampUp percentages.
+     * Salt is used in hash-based rollout calculations. Changing the salt
+     * will redistribute users across rollout percentages.
      *
      * @param value The salt value (default is "v1")
      */
@@ -88,7 +88,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      * ```kotlin
      * enable  {
      *     match(environment.oneOf(PRODUCTION))
-     *     rampUp { 50.0 }
+     *     rollout { 50.0 }
      * }
      * ```
      *

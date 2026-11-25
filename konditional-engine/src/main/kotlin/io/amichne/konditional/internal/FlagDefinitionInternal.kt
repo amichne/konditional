@@ -2,7 +2,7 @@ package io.amichne.konditional.internal
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.RampUp
+import io.amichne.konditional.context.Rollout
 import io.amichne.konditional.context.fact.FactSpec
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
@@ -22,7 +22,7 @@ import io.amichne.konditional.values.RuleId
 data class SerializedFlagDefinitionMetadata(
     val salt: String = "v1",
     val isActive: Boolean = true,
-    val rampUpAllowlist: Set<String> = emptySet(),
+    val rolloutAllowlist: Set<String> = emptySet(),
 )
 
 /** One ordered conjunction and the value selected when it matches. */
@@ -31,8 +31,8 @@ data class SerializedFlagRuleSpec<T : Any>(
     val value: T,
     val conditions: List<FactSpec>,
     val ruleId: RuleId = RuleId.unspecified,
-    val rampUp: Double = 100.0,
-    val rampUpAllowlist: Set<String> = emptySet(),
+    val rollout: Double = 100.0,
+    val rolloutAllowlist: Set<String> = emptySet(),
     val note: String? = null,
 )
 
@@ -53,8 +53,8 @@ fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
             }
         }
         Rule(
-            rampUp = RampUp.of(spec.rampUp),
-            rampUpAllowlist = spec.rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
+            rollout = Rollout.of(spec.rollout),
+            rolloutAllowlist = spec.rolloutAllowlist.mapTo(linkedSetOf()) { HexId(it) },
             note = spec.note,
             targeting = Targeting.All(targets),
             ruleId = spec.ruleId,
@@ -67,7 +67,7 @@ fun <T : Any, C : Context, M : Namespace> flagDefinitionFromSerialized(
             defaultValue = defaultValue,
             salt = metadata.salt,
             isActive = metadata.isActive,
-            rampUpAllowlist = metadata.rampUpAllowlist.mapTo(linkedSetOf()) { HexId(it) },
+            rolloutAllowlist = metadata.rolloutAllowlist.mapTo(linkedSetOf()) { HexId(it) },
         ),
     )
 }
@@ -77,7 +77,7 @@ fun FlagDefinition<*, *, *>.toSerializedMetadata(): SerializedFlagDefinitionMeta
     SerializedFlagDefinitionMetadata(
         salt = salt,
         isActive = isActive,
-        rampUpAllowlist = rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
+        rolloutAllowlist = rolloutAllowlist.mapTo(linkedSetOf()) { it.id },
     )
 
 @KonditionalInternalApi
@@ -100,8 +100,8 @@ fun FlagDefinition<*, *, *>.toSerializedRules(): List<SerializedFlagRuleSpec<Any
             value = value,
             conditions = conditions,
             ruleId = cv.rule.ruleId,
-            rampUp = cv.rule.rampUp.value,
-            rampUpAllowlist = cv.rule.rampUpAllowlist.mapTo(linkedSetOf()) { it.id },
+            rollout = cv.rule.rollout.value,
+            rolloutAllowlist = cv.rule.rolloutAllowlist.mapTo(linkedSetOf()) { it.id },
             note = cv.rule.note,
         )
     }

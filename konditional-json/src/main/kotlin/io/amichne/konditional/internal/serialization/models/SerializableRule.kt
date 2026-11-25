@@ -14,8 +14,8 @@ internal data class SerializableRule(
     val value: FlagValue<*>,
     val conditions: List<FactSpec>,
     val ruleId: RuleId? = null,
-    val rampUp: Double = 100.0,
-    val rampUpAllowlist: Set<String> = emptySet(),
+    val rollout: Double = 100.0,
+    val rolloutAllowlist: Set<String> = emptySet(),
     val note: String? = null,
 ) {
     fun <T : Any> toSpec(value: T, fallbackRuleId: RuleId): SerializedFlagRuleSpec<T> =
@@ -23,8 +23,8 @@ internal data class SerializableRule(
             value = value,
             conditions = conditions,
             ruleId = ruleId ?: fallbackRuleId,
-            rampUp = rampUp,
-            rampUpAllowlist = rampUpAllowlist,
+            rollout = rollout,
+            rolloutAllowlist = rolloutAllowlist,
             note = note,
         )
 
@@ -34,8 +34,8 @@ internal data class SerializableRule(
                 value = FlagValue.from(rule.value),
                 conditions = rule.conditions,
                 ruleId = rule.ruleId,
-                rampUp = rule.rampUp,
-                rampUpAllowlist = rule.rampUpAllowlist,
+                rollout = rule.rollout,
+                rolloutAllowlist = rule.rolloutAllowlist,
                 note = rule.note,
             )
     }
