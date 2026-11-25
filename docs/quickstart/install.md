@@ -1,48 +1,72 @@
-# Install
+# Install Konditional
 
-The smallest useful dependency for a first adoption is `konditional-engine`.
-It gives you `Namespace`, typed feature declarations, `evaluate(...)`, and
-`explain(...)`.
+Use JDK 27 and the Gradle wrapper from the [Konditional repository](https://github.com/amichne/konditional). The library targets JVM 26.
 
-## Add the engine module
+## Install the modules locally
 
-Start in the Gradle module that owns the first feature decision.
-
-```kotlin
-dependencies {
-    implementation("io.amichne.konditional:konditional-engine:<version>")
-}
-```
-
-That is enough to declare flags and evaluate them in application code.
-
-## Add JSON later
-
-You only need `konditional-json` when you are ready to export or import
-namespace snapshots.
-
-```kotlin
-dependencies {
-    implementation("io.amichne.konditional:konditional-json:<version>")
-}
-```
-
-The JSON module builds on top of the engine model. You do not need it for the
-first namespace or the first typed evaluation path.
-
-## Verify the setup
-
-Compile the module after adding the dependency so the rest of the quickstart
-starts from a known-good baseline.
+From the Konditional checkout, install the engine, types, and JSON modules in your local Maven repository.
 
 ```bash
-./gradlew <your-module>:build
+./gradlew publishToMavenLocal -Pkonditional.publish.target=local
 ```
 
-## Next steps
+Use the `version` from the checkout's `gradle.properties` for all three modules. This example uses `0.3.7`.
 
-With the dependency in place, the next step is to model one real domain value,
-one context, and one namespace.
+## Create a Kotlin application
 
-- [Define your first namespace](define-first-namespace.md)
+In a separate project directory, create `settings.gradle.kts`.
 
+```kotlin
+rootProject.name = "checkout-example"
+
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal {
+            content { includeGroup("io.github.amichne") }
+        }
+        mavenCentral()
+    }
+}
+```
+
+Create `build.gradle.kts` in the same directory.
+
+```kotlin
+plugins {
+    kotlin("jvm") version "2.4.21"
+    application
+}
+
+kotlin {
+    jvmToolchain(27)
+    compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_26)
+}
+
+tasks.withType<JavaCompile>().configureEach { options.release.set(26) }
+
+dependencies {
+    implementation("io.github.amichne:konditional-engine:0.3.7")
+}
+
+application { mainClass.set("MainKt") }
+```
+
+From the application directory, use the checkout's wrapper to create a Gradle wrapper for the application.
+Replace `/path/to/konditional` with the checkout directory.
+
+```bash
+/path/to/konditional/gradlew wrapper
+./gradlew build
+```
+
+## Add JSON support
+
+Before the JSON example, add this dependency to the application's `build.gradle.kts`.
+
+```kotlin
+dependencies {
+    implementation("io.github.amichne:konditional-json:0.3.7")
+}
+```
+
+[Define the checkout namespace](define-first-namespace.md).

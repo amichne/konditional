@@ -56,8 +56,7 @@ an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the maintainers by opening a private security advisory or by
-contacting maintainers through repository support channels. All complaints will
+reported to the maintainers by email at [austin@michne.com](mailto:austin@michne.com). All complaints will
 be reviewed and investigated promptly and fairly.
 
 All maintainers are obligated to respect the privacy and security of the

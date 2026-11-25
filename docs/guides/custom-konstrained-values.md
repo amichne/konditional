@@ -6,7 +6,7 @@ you still want JSON round-tripping through `konditional-json`.
 
 ## Start with an object-backed value
 
-Object-backed values are the most straightforward shape for custom payloads.
+A retry policy groups a maximum attempt count, delay, mode, and enabled state.
 
 ```kotlin
 import io.amichne.konditional.core.types.Konstrained
@@ -29,13 +29,11 @@ data class RetryPolicy(
 }
 ```
 
-The schema is what lets the JSON layer reject malformed payloads instead of
-constructing a half-trusted value.
+The schema specifies the minimum count, minimum delay, and minimum mode length.
 
 ## Use the value in a feature
 
-Declare the feature with `custom<T, C>(...)` just like you would declare an
-enum or a boolean feature.
+Declare the feature with `custom<T, C>`.
 
 ```kotlin
 object CheckoutFlags : Namespace("checkout") {
@@ -48,13 +46,4 @@ object CheckoutFlags : Namespace("checkout") {
 ## Other supported shapes
 
 `Konstrained` also supports primitive-backed value classes, array-backed
-values, and adapted primitive encodings such as `AsString` or `AsInt`. Reach
-for those shapes when the wire form is a single primitive or a single list.
-
-## Next steps
-
-If your custom values depend on a domain dimension like environment or tenant,
-the next guide shows how to model that dimension as an axis.
-
-- [Read the custom axes guide](custom-axes.md)
-
+values, and adapted primitive encodings such as `AsString` or `AsInt`. Use those shapes when the wire form is a single primitive or a single list.

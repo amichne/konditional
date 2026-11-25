@@ -1,46 +1,7 @@
-# Parse boundary
+# Rejected snapshots
 
-The JSON boundary is strict by design. External text is not trusted until it
-has been decoded into a full `Configuration`, and failures do not partially
-mutate the live namespace.
+`Namespace.fromJson(json)` loads a complete configuration on success. If decoding fails, the caller receives `ParseResult.Failure` and the namespace keeps its active snapshot.
 
-## What is guaranteed
+The error identifies the problem. Examples include `ParseError.InvalidJson`, `ParseError.FeatureNotFound`, `ParseError.InvalidSnapshot`, `ParseError.UnknownField`, `ParseError.MissingRequired`, and `ParseError.InvalidValue`.
 
-`Namespace.fromJson(json)` has two outcomes.
-
-- `ParseResult.Success` with a fully decoded configuration that is then loaded
-  into the namespace
-- `ParseResult.Failure` with a typed `ParseError`
-
-There is no success path that applies only some of the payload.
-
-## Failure classes
-
-The current parse boundary can surface failure types such as:
-
-- `ParseError.InvalidJson`
-- `ParseError.FeatureNotFound`
-- `ParseError.InvalidSnapshot`
-- `ParseError.UnknownField`
-- `ParseError.MissingRequired`
-- `ParseError.InvalidValue`
-
-These errors make the failure mode explicit without requiring callers to decode
-ad hoc exception text.
-
-## Evidence in the repo
-
-The JSON tests prove that malformed JSON, unknown feature keys, and invalid
-custom values are rejected while the previous namespace state remains intact.
-
-- `NamespaceJsonTest`
-- `ConfigurationCodecTest`
-- `ParseResultTest`
-
-## Next steps
-
-If you want the exact APIs and JSON fields involved, the reference section
-collects them in one place.
-
-- [Open the reference section](../reference/index.md)
-
+The [JSON quickstart](../quickstart/load-json-safely.md) captures the snapshot, submits malformed JSON, and compares the active snapshot after rejection.

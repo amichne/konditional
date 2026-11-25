@@ -1,36 +1,17 @@
 # Module dependency map
 
-This page helps you pick the narrowest dependency surface for the capability
-you want to add.
-
-## Published modules
-
-The current repo exposes three meaningful library modules for consumers.
-
-| Module | Use it for | Notes |
+| Module | Choose it when you need | Project dependency |
 | --- | --- | --- |
-| `konditional-types` | Shared identifiers, contexts, axes, parse results, and `Konstrained` contracts | Useful when you need shared domain or boundary types without the engine |
-| `konditional-engine` | Namespaces, feature declarations, `evaluate(...)`, `explain(...)`, and runtime registries | The default first dependency for application code |
-| `konditional-json` | Snapshot export and strict JSON import through `toJson()` and `fromJson(json)` | Add when external configuration becomes necessary |
+| `konditional-types` | Shared context types, axes, identifiers, parse results, or custom value types | None |
+| `konditional-engine` | Namespace declarations, evaluation, diagnostics, or runtime registries | `konditional-types` |
+| `konditional-json` | Snapshot import or export | `konditional-engine` |
 
-## Typical choices
+Gradle includes the project dependencies transitively. `smoke-test` contains repository integration tests.
 
-Most adopters start with one of these shapes.
+From the quickstart application, inspect which module brings in the engine.
 
-- `konditional-engine` only for code-defined flags
-- `konditional-engine` plus `konditional-json` for runtime snapshots
-- `konditional-types` in a shared module when multiple modules need the same
-  contexts, axes, or custom value contracts
+```bash
+./gradlew dependencyInsight --dependency konditional-engine --configuration runtimeClasspath
+```
 
-## Non-library module
-
-`smoke-test` is a verification module in the repo. It is not part of the
-consumer dependency story.
-
-## Next steps
-
-After you choose the module surface, the API page is the fastest way to see
-the key entry points inside those modules.
-
-- [Open the API surface](api-surface.md)
-
+See the [install guide](../quickstart/install.md) for Maven coordinates and JVM compatibility.

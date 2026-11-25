@@ -1,12 +1,10 @@
 # Custom axes
 
-Axes are the recommended way to model domain-specific targeting dimensions.
-Use them when your rules depend on values like environment, product line,
-tenant, or region.
+Use an axis when rules select a product, environment, tenant, or region.
 
 ## Define the axis values
 
-An axis value is an enum that implements `AxisValue<T>`.
+Each entry in an enum that implements `AxisValue<T>` is an axis value.
 
 ```kotlin
 import io.amichne.konditional.context.axis.AxisValue
@@ -50,12 +48,3 @@ object RuntimeFlags : Namespace("runtime") {
 ```
 
 That rule only matches contexts whose environment axis includes `PROD`.
-
-## Next steps
-
-After you add a custom axis, the next useful task is usually testing. The
-testing guide shows how to prove that axis targeting and other invariants stay
-stable.
-
-- [Read the testing guide](testing-strategies.md)
-
