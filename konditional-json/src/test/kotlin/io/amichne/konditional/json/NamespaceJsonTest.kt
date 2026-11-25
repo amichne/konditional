@@ -1,11 +1,14 @@
 package io.amichne.konditional.json
 
 import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.Platform
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.instance.Configuration
 import io.amichne.konditional.core.instance.ConfigurationMetadata
+import io.amichne.konditional.core.result.KonditionalBoundaryFailure
 import io.amichne.konditional.core.result.ParseError
 import io.amichne.konditional.core.result.ParseResult
 import io.amichne.konditional.fixtures.RetryPolicy
@@ -15,11 +18,80 @@ import io.amichne.konditional.serialization.toJson
 import io.amichne.konditional.values.FeatureId
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class NamespaceJsonTest {
+    @Test
+    fun exportRejectsAnAnonymousPredicateEvenAlongsideAFlatCondition() {
+        val namespace = object : Namespace("anonymous-export") {
+            val checkout by boolean<TestContext>(default = false) {
+                rule(true) {
+                    platforms(Platform.IOS)
+                    require { locale == AppLocale.CANADA }
+                }
+            }
+        }
+        val before = namespace.currentSnapshot
+        val failure = assertFailsWith<KonditionalBoundaryFailure> { namespace.toJson() }
+        assertIs<ParseError.InvalidSnapshot>(failure.parseError)
+        assertTrue(failure.parseError.message.contains(namespace.checkout.id.toString()))
+        assertSame(before, namespace.currentSnapshot)
+        assertFalse(namespace.checkout.evaluate(TestContext(locale = AppLocale.UNITED_STATES)))
+        assertTrue(namespace.checkout.evaluate(TestContext(locale = AppLocale.CANADA)))
+    }
+
+    @Test
+    fun exportRejectsAnyOfEvenWhenBothChildrenAreSerializable() {
+        val namespace = object : Namespace("any-of-export") {
+            val checkout by boolean<TestContext>(default = false) {
+                rule(true) {
+                    anyOf {
+                        platforms(Platform.IOS)
+                        locales(AppLocale.CANADA)
+                    }
+                }
+            }
+        }
+        val failure = assertFailsWith<KonditionalBoundaryFailure> { namespace.toJson() }
+        assertIs<ParseError.InvalidSnapshot>(failure.parseError)
+        assertTrue(failure.parseError.message.contains(namespace.checkout.id.toString()))
+        assertFalse(namespace.checkout.evaluate(TestContext(platform = Platform.ANDROID, locale = AppLocale.UNITED_STATES)))
+    }
+
+    @Test
+    fun exportRejectsRepeatedConditionsThatShareOneSnapshotField() {
+        val namespace = object : Namespace("repeated-export") {
+            val checkout by boolean<TestContext>(default = false) {
+                rule(true) {
+                    platforms(Platform.IOS)
+                    platforms(Platform.ANDROID)
+                }
+            }
+        }
+        val failure = assertFailsWith<KonditionalBoundaryFailure> { namespace.toJson() }
+        assertIs<ParseError.InvalidSnapshot>(failure.parseError)
+    }
+
+    @Test
+    fun flatConditionsRoundTripWhenDeclaredInADifferentOrderFromTheWireFields() {
+        val namespace = object : Namespace("flat-export") {
+            val checkout by boolean<TestContext>(default = false) {
+                rule(true) {
+                    platforms(Platform.IOS)
+                    locales(AppLocale.CANADA)
+                }
+            }
+        }
+        assertIs<ParseResult.Success<*>>(namespace.fromJson(namespace.toJson()))
+        assertTrue(namespace.checkout.evaluate(TestContext(platform = Platform.IOS, locale = AppLocale.CANADA)))
+        assertFalse(namespace.checkout.evaluate(TestContext(platform = Platform.IOS, locale = AppLocale.UNITED_STATES)))
+        assertFalse(namespace.checkout.evaluate(TestContext(platform = Platform.ANDROID, locale = AppLocale.CANADA)))
+    }
+
     private enum class Theme {
         LIGHT,
         DARK,
