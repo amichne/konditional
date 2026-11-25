@@ -1,6 +1,6 @@
 # Contributing to Konditional
 
-Use JDK 27 to build the repository. Kotlin 2.4.21 compiles the libraries for JVM 26.
+Use JDK 17 to run the Gradle wrapper. The published libraries target Java 8 bytecode and APIs.
 
 ## Set up the checkout
 

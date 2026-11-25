@@ -15,20 +15,18 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain(27)
     compilerOptions {
-        // Kotlin 2.4.21 supports JVM bytecode through Java 26.
-        jvmTarget.set(JvmTarget.JVM_26)
-        freeCompilerArgs.add("-Xjdk-release=26")
+        jvmTarget.set(JvmTarget.JVM_1_8)
+        freeCompilerArgs.add("-Xjdk-release=1.8")
         optIn.add("io.amichne.konditional.api.KonditionalInternalApi")
     }
 }
 
 java {
     withSourcesJar()
-    targetCompatibility = JavaVersion.VERSION_26
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(26)
+    options.release.set(8)
 }

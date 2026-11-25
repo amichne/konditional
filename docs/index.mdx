@@ -3,10 +3,21 @@ title: "Konditional"
 description: "Typed feature flags for Kotlin."
 ---
 
-Declare a flag with a default value and a rule. At the call site, pass the input the rule needs and get back the flag’s Kotlin value.
+Should this account see the new checkout? Give the flag a default of `false` and a rule that enables it for pilot accounts. The caller gets a Kotlin `Boolean` it can use directly.
 
-<Card title="Run your first flag" href="/quickstart">
-  Enable a new checkout for pilot accounts and see the default for other accounts.
+```kotlin
+val showNewCheckout = CheckoutFlags.newCheckout
+    .evaluate(Account(Channel.PILOT))  // true
+```
+
+<Card title="Add the engine to your project" href="/quickstart/install">
+  Start here with a Kotlin/JVM application. Then declare the checkout flag and run it for pilot and general accounts.
 </Card>
 
-Already using Konditional? Choose a task from [Advanced usage](/guides).
+Already have the engine? [Run your first flag](/quickstart).
+
+<Accordion title="Where should I go if I already use Konditional?">
+  To change who sees a feature or what it returns, open [Advanced usage](/guides).
+  To look up a function, decision, or snapshot field, open [Reference](/reference).
+  If you are choosing a library for your team, see [About Konditional](/start-here).
+</Accordion>

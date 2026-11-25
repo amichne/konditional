@@ -3,7 +3,7 @@ title: "Add the engine to your project"
 description: "These steps use a local copy of Konditional with a Kotlin/JVM Gradle project."
 ---
 
-Use JDK 27. The Konditional build uses Gradle 9.8.2 and Kotlin 2.4.21.
+Use JDK 17 to run Gradle for this example. Your application can keep its existing JVM target. The Konditional libraries run on Java 8 or newer.
 
 1. From the directory that contains your application project, clone Konditional
    alongside it.
@@ -23,17 +23,15 @@ Use JDK 27. The Konditional build uses Gradle 9.8.2 and Kotlin 2.4.21.
    engine itself.
 
     ```kotlin
-    kotlin {
-        jvmToolchain(27)
-    }
-
-    java {
-        targetCompatibility = JavaVersion.VERSION_26
-    }
-
     dependencies {
         implementation("io.github.amichne:konditional-engine")
     }
     ```
 
-Reload the Gradle project in your IDE, then [declare your first flag](/quickstart#declare-the-flag).
+Reload the Gradle project in your IDE.
+
+<Accordion title="Where does Gradle get the engine?">
+  The included build supplies `konditional-engine` from your checkout. Maven Central supplies its external dependencies. To try the versioned artifacts in a separate application, see [Set up a standalone checkout application](/guides/standalone-checkout).
+</Accordion>
+
+[Run your first flag](/quickstart#declare-the-flag) in this module to check that a pilot account gets the new checkout.

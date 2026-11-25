@@ -1,8 +1,14 @@
 package io.amichne.konditional.context.fact
 
+import java.util.Collections
+import java.util.Objects
+
+internal fun <T : Any> immutableListCopy(values: Collection<T>): List<T> =
+    Collections.unmodifiableList(values.map { Objects.requireNonNull(it) })
+
 /** A typed assignment created by its declaring fact. */
 class FactValue<T : Any> internal constructor(internal val fact: Fact<T>, values: Collection<T>) {
-    internal val values: List<T> = java.util.List.copyOf(values)
+    internal val values: List<T> = immutableListCopy(values)
 }
 
 /** Immutable assignments, keyed by declaration identity. An undeclared assignment cannot satisfy a rule. */

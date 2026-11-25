@@ -13,7 +13,7 @@ sealed class Fact<T : Any> protected constructor(id: String, internal val domain
     fun oneOf(first: T, vararg rest: T): FactExpression = membership(listOf(first) + rest)
 
     internal fun membership(values: List<T>): FactExpression =
-        Membership(this, java.util.List.copyOf(values.distinct().sortedBy(domain.encode)))
+        Membership(this, immutableListCopy(values.distinct().sortedBy(domain.encode)))
 
     internal fun parse(raw: String): ParseResult<T> = when (val parsed = domain.decode(raw)) {
         is ParseResult.Success -> parsed

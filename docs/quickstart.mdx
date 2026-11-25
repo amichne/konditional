@@ -3,8 +3,7 @@ title: "Run your first flag"
 description: "Enable a new checkout for pilot accounts."
 ---
 
-You need a Kotlin/JVM
-project with the Konditional engine. [Add the engine to your project](/quickstart/install).
+Use the Kotlin/JVM module from [Add the engine to your project](/quickstart/install).
 
 ## Declare the flag
 
@@ -41,7 +40,8 @@ Add this function to the same file. Run `main()` from your IDE.
 ```kotlin
 fun main() {
     for (releaseChannel in Channel.entries) {
-        val showNewCheckout: Boolean = CheckoutFlags.newCheckout.evaluate(Account(releaseChannel))
+        val showNewCheckout = CheckoutFlags.newCheckout
+            .evaluate(Account(releaseChannel))
         println("$releaseChannel: $showNewCheckout")
     }
 }
@@ -54,4 +54,6 @@ GENERAL: false
 
 The pilot account matches the rule. The general account gets the default.
 
-When you need a second use case, choose a guide from [Advanced usage](/guides).
+<Card title="Check your flag" href="/quickstart/check-your-flag">
+  Turn those two printed values into checks that catch a rule change.
+</Card>

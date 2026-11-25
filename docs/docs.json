@@ -16,8 +16,9 @@
             "group": "Getting started",
             "pages": [
               "index",
+              "quickstart/install",
               "quickstart",
-              "quickstart/install"
+              "quickstart/check-your-flag"
             ]
           }
         ]
@@ -68,56 +69,56 @@
         "tab": "Reference",
         "groups": [
           {
-            "group": "Evaluating Konditional",
-            "pages": [
-              "start-here",
-              "start-here/why-konditional",
-              "start-here/when-it-fits",
-              "start-here/trade-offs-and-non-goals",
-              "start-here/comparison",
-              "start-here/adoption-path"
-            ]
-          },
-          {
-            "group": "Concepts",
-            "pages": [
-              "concepts",
-              "concepts/namespaces",
-              "concepts/typed-features",
-              "concepts/context-and-facts",
-              "concepts/rules-and-precedence",
-              "concepts/runtime-snapshots",
-              "concepts/json-boundary"
-            ]
-          },
-          {
-            "group": "Guarantees",
-            "pages": [
-              "guarantees",
-              "guarantees/type-safety",
-              "guarantees/determinism",
-              "guarantees/namespace-isolation",
-              "guarantees/atomic-snapshots",
-              "guarantees/parse-boundary"
-            ]
-          },
-          {
-            "group": "Reference",
+            "group": "Library",
             "pages": [
               "reference",
-              "reference/module-dependency-map",
               "reference/api-surface",
-              "reference/snapshot-json-format",
               "reference/evaluation-diagnostics",
+              "reference/snapshot-json-format",
+              "reference/module-dependency-map",
+              {
+                "group": "Concepts",
+                "root": "concepts",
+                "pages": [
+                  "concepts/namespaces",
+                  "concepts/typed-features",
+                  "concepts/context-and-facts",
+                  "concepts/rules-and-precedence",
+                  "concepts/runtime-snapshots",
+                  "concepts/json-boundary"
+                ]
+              },
+              {
+                "group": "Guarantees",
+                "root": "guarantees",
+                "pages": [
+                  "guarantees/type-safety",
+                  "guarantees/determinism",
+                  "guarantees/namespace-isolation",
+                  "guarantees/atomic-snapshots",
+                  "guarantees/parse-boundary"
+                ]
+              },
+              {
+                "group": "Appendix",
+                "root": "appendix",
+                "pages": [
+                  "appendix/glossary",
+                  "appendix/faq"
+                ]
+              },
+              {
+                "group": "About Konditional",
+                "root": "start-here",
+                "pages": [
+                  "start-here/why-konditional",
+                  "start-here/when-it-fits",
+                  "start-here/trade-offs-and-non-goals",
+                  "start-here/comparison",
+                  "start-here/adoption-path"
+                ]
+              },
               "reference/build-docs-and-release"
-            ]
-          },
-          {
-            "group": "Appendix",
-            "pages": [
-              "appendix",
-              "appendix/glossary",
-              "appendix/faq"
             ]
           }
         ]

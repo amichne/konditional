@@ -12,7 +12,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        java: ['27']
+        java: ['21', '27']
+        include:
+          - os: ubuntu-latest
+            java: '17'
+            testOptions: -Pkonditional.test.javaVersion=8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8_X64
 
     steps:
       - name: Checkout code
@@ -20,6 +24,13 @@ jobs:
 
       - name: Test publication preview
         run: python3 -m unittest discover -s scripts -p test_publish_plan.py
+
+      - name: Install the minimum library runtime
+        if: matrix.testOptions
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: temurin
 
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v4
@@ -29,7 +40,7 @@ jobs:
           cache: gradle
 
       - name: Run test suite
-        run: ./gradlew test :build-logic:test --no-daemon --stacktrace
+        run: ./gradlew test :build-logic:test --no-daemon --stacktrace ${{ matrix.testOptions }}
 
       - name: Upload test results
         if: always()
@@ -39,6 +50,18 @@ jobs:
           path: |
             **/build/test-results/test/
             **/build/reports/tests/test/
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: gradle
+      - name: Build library artifacts and publication metadata
+        run: ./gradlew assemble generateMetadataFileForMavenPublication --no-daemon --stacktrace
 
   docs:
     runs-on: ubuntu-latest

@@ -22,6 +22,16 @@ class PortableFactTest {
     private enum class Rank { LOW, HIGH }
 
     @Test
+    fun `portable expressions expose immutable ordered terms`() {
+        val rank = SingleFact("rank", FactDomain.enumeration(Rank.entries) { it.name })
+        val low = rank.oneOf(Rank.LOW)
+        val high = rank.oneOf(Rank.HIGH)
+        val spec = assertIs<FactSpec.All>(allOf(low, high, high).spec)
+        assertFailsWith<UnsupportedOperationException> { java.util.Collections.reverse(spec.terms) }
+        assertEquals(listOf(low.spec, high.spec, high.spec), spec.terms)
+    }
+
+    @Test
     fun `enum domains reject incomplete or ambiguous vocabulary`() {
         assertFailsWith<IllegalArgumentException> { FactDomain.enumeration(listOf(Rank.LOW)) { it.name } }
         assertFailsWith<IllegalArgumentException> {

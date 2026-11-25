@@ -62,5 +62,5 @@ private fun <T, R : Any> List<T>.traverse(parse: (T) -> ParseResult<R>): ParseRe
             is ParseResult.Success -> parsed.add(result.value)
         }
     }
-    return ParseResult.Success(java.util.List.copyOf(parsed))
+    return ParseResult.Success(immutableListCopy(parsed))
 }

@@ -25,7 +25,7 @@ internal sealed class Comparison<T : Any> : FactExpression() {
 internal data class Membership<T : Any>(override val fact: Fact<T>, val operands: List<T>) : Comparison<T>() {
     private val allowed = operands.toSet()
     override val spec: FactSpec.OneOf =
-        FactSpec.OneOf(fact.key.id, java.util.List.copyOf(operands.map(fact.domain.encode)))
+        FactSpec.OneOf(fact.key.id, immutableListCopy(operands.map(fact.domain.encode)))
     override fun matches(context: Context): Boolean = context.facts.matches(fact, allowed::contains)
 }
 
@@ -42,21 +42,21 @@ internal data class UpperBound<T : Any>(override val fact: OrderedFact<T>, val o
 }
 
 internal data class Conjunction(val terms: List<FactExpression>) : FactExpression() {
-    override val spec: FactSpec.All = FactSpec.All(java.util.List.copyOf(terms.map { it.spec }))
+    override val spec: FactSpec.All = FactSpec.All(immutableListCopy(terms.map { it.spec }))
     override fun matches(context: Context): Boolean = terms.all { it.matches(context) }
     override fun specificity(): Int = terms.sumOf { it.specificity() }
     override fun declaredIn(schema: FactSchema): Boolean = terms.all { it.declaredIn(schema) }
 }
 
 internal data class Disjunction(val terms: List<FactExpression>) : FactExpression() {
-    override val spec: FactSpec.AnyOf = FactSpec.AnyOf(java.util.List.copyOf(terms.map { it.spec }))
+    override val spec: FactSpec.AnyOf = FactSpec.AnyOf(immutableListCopy(terms.map { it.spec }))
     override fun matches(context: Context): Boolean = terms.any { it.matches(context) }
     override fun specificity(): Int = terms.maxOfOrNull { it.specificity() } ?: 0
     override fun declaredIn(schema: FactSchema): Boolean = terms.all { it.declaredIn(schema) }
 }
 
 /** Matches when all terms match, including the empty conjunction. Preserves term order and duplicates. */
-fun allOf(vararg terms: FactExpression): FactExpression = Conjunction(java.util.List.copyOf(terms.asList()))
+fun allOf(vararg terms: FactExpression): FactExpression = Conjunction(immutableListCopy(terms.asList()))
 
 /** Matches when at least one term matches. An empty disjunction misses. */
-fun anyOf(vararg terms: FactExpression): FactExpression = Disjunction(java.util.List.copyOf(terms.asList()))
+fun anyOf(vararg terms: FactExpression): FactExpression = Disjunction(immutableListCopy(terms.asList()))
