@@ -1,7 +1,0 @@
-# Migrate a string-key flag
-
-1. Choose one caller. Record the existing key, fallback, and expected results.
-2. Declare a namespace in the module that owns the decision. Use an enum for distinct states or a `Konstrained` type for a structured value.
-3. Change the caller to use `evaluate`. Add tests for the default and each targeted result.
-4. If you need to compare the systems, evaluate both with the same inputs in application code. Record mismatches before you switch the caller.
-5. If a remote service supplies configuration, handle both outcomes from [`fromJson`](remote-configuration.md). Remove the legacy lookup once the caller uses the new result.

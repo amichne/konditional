@@ -26,7 +26,7 @@ Top-level areas and their purpose:
 - `konditional-json/` → JSON boundary: Moshi codecs and schema-aware parsing layered on engine types
 - `kontracts/` → contracts/spec artifacts
 - `smoke-test/` → integration smoke tests
-- `docs/` → documentation site (MkDocs/Zensical)
+- `docs/` → Mintlify documentation site and navigation (`docs/docs.json`)
 - `skill/` → agent skill definition (`skill/SKILL.md`)
 
 Hard boundaries:
@@ -43,7 +43,7 @@ Use this path before making non-trivial edits:
 1. **Anchor on intent**
    - Find the owning module from the map above.
 2. **Load invariants first**
-   - Read `docs/*.md` relevant to your change.
+   - Read the relevant MDX pages under `docs/`.
 3. **Find existing patterns**
    - Reuse local ADTs, loaders, adapters, registry patterns.
 4. **Implement smallest vertical slice**

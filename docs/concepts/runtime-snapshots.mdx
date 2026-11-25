@@ -1,0 +1,14 @@
+---
+title: "Runtime snapshots"
+---
+
+A namespace snapshot contains the configuration and the namespace-wide kill switch. The configuration holds feature definitions and optional metadata such as the version, source, and generation time.
+
+| Registry operation | Effect |
+| --- | --- |
+| `load(config)` | Installs the configuration in the namespace. |
+| `rollback(steps = 1)` | Restores a previous snapshot if the registry has enough history. |
+| `disableAll()` | Switches all features in the namespace to their declared defaults. |
+| `enableAll()` | Resumes evaluation against the active configuration. |
+
+The default registry serializes writes and replaces the snapshot atomically. See [atomic snapshots](/guarantees/atomic-snapshots) for nested evaluations and custom registries.

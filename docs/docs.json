@@ -1,0 +1,135 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Konditional",
+  "colors": {
+    "primary": "#4654A3",
+    "light": "#A5B4FC",
+    "dark": "#394594"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Getting started",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "index",
+              "quickstart",
+              "quickstart/install"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Advanced usage",
+        "groups": [
+          {
+            "group": "Advanced usage",
+            "pages": [
+              "guides"
+            ]
+          },
+          {
+            "group": "Target users",
+            "pages": [
+              "quickstart/add-ramp-up",
+              "guides/custom-axes"
+            ]
+          },
+          {
+            "group": "Return typed values",
+            "pages": [
+              "quickstart/define-first-namespace",
+              "quickstart/evaluate-a-typed-flag",
+              "guides/custom-konstrained-values"
+            ]
+          },
+          {
+            "group": "Update flags at runtime",
+            "pages": [
+              "quickstart/load-json-safely",
+              "guides/remote-configuration"
+            ]
+          },
+          {
+            "group": "Adopt and test flags",
+            "pages": [
+              "guides/migrating-from-string-flags",
+              "guides/testing-strategies",
+              "guides/standalone-checkout",
+              "quickstart/verify-behavior"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Evaluating Konditional",
+            "pages": [
+              "start-here",
+              "start-here/why-konditional",
+              "start-here/when-it-fits",
+              "start-here/trade-offs-and-non-goals",
+              "start-here/comparison",
+              "start-here/adoption-path"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              "concepts",
+              "concepts/namespaces",
+              "concepts/typed-features",
+              "concepts/context-and-axes",
+              "concepts/rules-and-precedence",
+              "concepts/runtime-snapshots",
+              "concepts/json-boundary"
+            ]
+          },
+          {
+            "group": "Guarantees",
+            "pages": [
+              "guarantees",
+              "guarantees/type-safety",
+              "guarantees/determinism",
+              "guarantees/namespace-isolation",
+              "guarantees/atomic-snapshots",
+              "guarantees/parse-boundary"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference",
+              "reference/module-dependency-map",
+              "reference/api-surface",
+              "reference/snapshot-json-format",
+              "reference/evaluation-diagnostics",
+              "reference/build-docs-and-release"
+            ]
+          },
+          {
+            "group": "Appendix",
+            "pages": [
+              "appendix",
+              "appendix/glossary",
+              "appendix/faq"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/amichne/konditional"
+      }
+    ]
+  }
+}

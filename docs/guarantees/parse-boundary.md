@@ -1,7 +1,0 @@
-# Rejected snapshots
-
-`Namespace.fromJson(json)` loads a complete configuration on success. If decoding fails, the caller receives `ParseResult.Failure` and the namespace keeps its active snapshot.
-
-The error identifies the problem. Examples include `ParseError.InvalidJson`, `ParseError.FeatureNotFound`, `ParseError.InvalidSnapshot`, `ParseError.UnknownField`, `ParseError.MissingRequired`, and `ParseError.InvalidValue`.
-
-The [JSON quickstart](../quickstart/load-json-safely.md) captures the snapshot, submits malformed JSON, and compares the active snapshot after rejection.

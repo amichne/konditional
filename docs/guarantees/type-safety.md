@@ -1,7 +1,0 @@
-# Type safety
-
-A namespace property binds a feature to its context and value types. The compiler checks the context at the call site and the result type where the caller uses it.
-
-For example, the [checkout feature](../quickstart/evaluate-a-typed-flag.md) accepts a `CommerceContext` and returns `ProductEligibility`. A caller can handle all enum entries in a `when` expression.
-
-External values need runtime checks. The JSON decoder checks each default and static rule value against its declared feature type. Some Kotlin value constructors also enforce preconditions at runtime.

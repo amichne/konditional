@@ -1,7 +1,0 @@
-# Rules and precedence
-
-A rule pairs targeting criteria with a value. Criteria can match a locale, platform, version range, custom axis, or a narrower context type.
-
-The engine considers rules in descending order of targeting specificity. For each match, the engine checks rollout eligibility. A rule that misses its rollout does not prevent a later rule from matching.
-
-The first eligible match supplies the value. If no rule qualifies, evaluation returns the feature default. Use [`explain`](../reference/evaluation-diagnostics.md) to see the decision for a specific context.

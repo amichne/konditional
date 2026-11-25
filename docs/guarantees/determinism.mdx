@@ -1,0 +1,9 @@
+---
+title: "Determinism"
+---
+
+For code-defined static values, the same context and namespace snapshot produce the same result. If a rule uses a Kotlin resolver, its result also depends on the inputs that resolver reads.
+
+`evaluate` and `explain` use the same rule order and rollout calculation. The engine hashes the salt, feature key, and stable ID to select a bucket. Changing the rollout percentage changes the eligibility threshold. It preserves each user's bucket when those three inputs stay fixed.
+
+The [rollout example](/quickstart/add-ramp-up) compares both the value and decision for repeated calls.

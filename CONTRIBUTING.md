@@ -14,14 +14,14 @@ Use JDK 27 to build the repository. Kotlin 2.4.21 compiles the libraries for JVM
 - Keep evaluation and namespace state in `konditional-engine`.
 - Parse external snapshots in `konditional-json`. If a snapshot fails to decode, keep the previous namespace state.
 
-See [the module map](docs/reference/module-dependency-map.md) for dependencies.
+See [the module map](docs/reference/module-dependency-map.mdx) for dependencies.
 
 ## Prepare a pull request
 
 1. Add tests for each behavior you change. For concurrent updates, cover whole-snapshot reads. For new inputs, cover accepted values and typed failures.
 2. If you change a public API, update its KDoc and user guide.
 3. Run `make test` for the Kotlin suite. Use `make check` for the repository checks.
-4. If you change the site, run `make docs-build`.
+4. For site changes, use Node.js 22 LTS and npm. Run `make docs-serve` to preview the MDX pages and `make docs-build` to check the site. Edit `docs/docs.json` for navigation changes.
 5. Keep the pull request focused on one change. Use a Conventional Commit title such as `docs: correct the install guide`.
 6. Review the impact on `CHANGELOG.md`. Request review after CI passes.
 
@@ -30,8 +30,8 @@ See [the module map](docs/reference/module-dependency-map.md) for dependencies.
 Edit `docs/appendix/glossary.json` to change a term, its definition, or its source. From the repository root, regenerate the reader table with `jq`.
 
 ```bash
-jq -r '"# Glossary\n\n| Term | Meaning |\n| --- | --- |", (.entries[] | "| \(.term) | \(.definition) |")' \
-    docs/appendix/glossary.json > docs/appendix/glossary.md
+jq -r '"---\ntitle: \"Glossary\"\n---\n\n| Term | Meaning |\n| --- | --- |", (.entries[] | "| \(.term) | \(.definition) |")' \
+    docs/appendix/glossary.json > docs/appendix/glossary.mdx
 ```
 
 ## Report a problem

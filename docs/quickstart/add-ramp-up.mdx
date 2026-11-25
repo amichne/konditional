@@ -1,0 +1,33 @@
+---
+title: "Add ramp-up"
+---
+
+Enable the checkout upsell for 25% of rollout buckets. The engine calculates each bucket from the salt, feature key, and stable ID. Two namespaces with the same three inputs assign the same bucket.
+
+Create `src/main/kotlin/Rollout.kt`. Give each user a stable ID so that repeated requests get the same bucket.
+
+```kotlin
+import io.amichne.konditional.api.explain
+import io.amichne.konditional.context.Context
+import io.amichne.konditional.core.Namespace
+import io.amichne.konditional.core.dsl.enable
+import io.amichne.konditional.core.id.StableId
+
+data class RolloutContext(override val stableId: StableId) : Context.StableIdContext
+
+object RolloutFlags : Namespace("rollout") {
+    val checkoutUpsell by boolean<RolloutContext>(default = false) {
+        enable { rampUp { 25 } }
+    }
+}
+
+fun checkRollout() {
+    val context = RolloutContext(StableId.of("same-user"))
+    val first = RolloutFlags.checkoutUpsell.explain(context)
+    val second = RolloutFlags.checkoutUpsell.explain(context)
+    check(first.value == second.value)
+    check(first.decision == second.decision)
+}
+```
+
+The decision includes the bucket for a matched rule or a rule skipped by ramp-up.

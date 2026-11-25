@@ -1,8 +1,0 @@
-# Adoption path
-
-1. In the module that owns a feature decision, declare one namespace with `konditional-engine`. Change one caller to use its typed result.
-2. If the feature needs a gradual rollout, add a stable ID to its context. Use `explain` to inspect the rollout decision.
-3. If operators supply configuration, add `konditional-json`. Handle both results from `fromJson` before you schedule the next refresh.
-4. Before another team adopts the namespace, document who owns its rules. Add tests for rollout stability, rejected snapshots, and namespace isolation.
-
-[Run the checkout example](../quickstart/index.md).

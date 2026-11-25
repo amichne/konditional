@@ -1,0 +1,45 @@
+---
+title: "Build, docs, and release"
+---
+
+## Local builds
+
+Use the narrowest command that proves your change.
+
+- `make build` compiles all Gradle modules.
+- `make test` runs the Kotlin test suite.
+- `make detekt` runs static analysis.
+- `make check` runs the static analysis target and tests.
+
+## Documentation workflow
+
+Mintlify reads MDX pages from `docs/` and navigation from `docs/docs.json`. Use Node.js 22 LTS and npm for the documentation commands.
+
+- `make docs-install` installs the pinned Mintlify CLI under `build/mintlify/`.
+- `make docs-build` validates the site and checks internal links.
+- `make docs-serve` starts the local Mintlify preview.
+- `make docs-clean` removes the local CLI and any older static site output.
+
+For hosted builds, connect `amichne/konditional` to Mintlify, select the `main` branch, and set the documentation directory to `docs`. [Mintlify monorepo setup](https://www.mintlify.com/docs/deploy/monorepo).
+
+After you verify the production URL, redirect the old GitHub Pages site to that URL. Keep each page's path after the old `/konditional/` prefix so bookmarks open the same topic.
+
+## Publishing workflow
+
+To preview a patch release, run this command from the repository root.
+
+```bash
+make publish-plan PUBLISH_TARGET=release VERSION_CHOICE=patch
+```
+
+Targets are `local`, `snapshot`, `release`, and `github`.
+
+- `make validate-publish` checks release prerequisites.
+- `make publish PUBLISH_TARGET=release VERSION_CHOICE=patch` applies the version action and publishes. It asks for confirmation in a terminal and runs unattended with closed stdin.
+- `make publish-local`, `make publish-snapshot`, `make publish-release`, and `make publish-github` publish the current version to the selected destination.
+
+## GitHub Actions
+
+- `CI` runs tests and validates the Mintlify site.
+- `Publish Snapshot` validates and publishes snapshot artifacts.
+- `Release` validates, publishes, and attaches release artifacts.

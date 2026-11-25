@@ -11,10 +11,10 @@
     "include": [
       "README.md",
       "CONTRIBUTING.md",
-      "docs/**/*.md"
+      "docs/**/*.mdx"
     ],
     "exclude": [
-      "docs/appendix/glossary.md"
+      "docs/appendix/glossary.mdx"
     ]
   },
   "entries": [

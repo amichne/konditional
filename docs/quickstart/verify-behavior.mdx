@@ -1,0 +1,39 @@
+---
+title: "Verify the standalone checkout"
+---
+
+Set up the [standalone application](/guides/standalone-checkout). Add the [enum flag](/quickstart/define-first-namespace), [eligibility function](/quickstart/evaluate-a-typed-flag), [rollout check](/quickstart/add-ramp-up), and [snapshot check](/quickstart/load-json-safely).
+
+Create `src/main/kotlin/Main.kt`. The second namespace uses the same feature key as the checkout namespace. Its default requests manual review for payments.
+
+```kotlin
+import io.amichne.konditional.api.evaluate
+import io.amichne.konditional.core.Namespace
+
+object ReviewFlags : Namespace("review") {
+    val productEligibility by enum<ProductEligibility, CommerceContext>(
+        default = ProductEligibility.MANUAL_REVIEW,
+    )
+}
+
+fun main() {
+    check(eligibility(Product.PAYMENTS) == ProductEligibility.ELIGIBLE)
+    check(checkoutRoute(Product.LENDING) == "manual review")
+    check(checkoutRoute(Product.SAVINGS) == "unavailable")
+    checkRollout()
+    checkSnapshots()
+
+    val payments = CommerceContext(Product.PAYMENTS)
+    check(ReviewFlags.productEligibility.evaluate(payments) == ProductEligibility.MANUAL_REVIEW)
+    check(EligibilityFlags.productEligibility.evaluate(payments) == ProductEligibility.ELIGIBLE)
+    println("Checkout quickstart passed")
+}
+```
+
+From the application directory, run the example.
+
+```bash
+./gradlew run
+```
+
+The application prints `Checkout quickstart passed` after all assertions pass.

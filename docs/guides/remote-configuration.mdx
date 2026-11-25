@@ -1,0 +1,26 @@
+---
+title: "Remote configuration"
+description: "Use remote configuration when checkout rules need to change between application releases."
+---
+
+Start with a namespace and the [JSON module](/quickstart/load-json-safely).
+Your application fetches the snapshot and passes the response body to `fromJson`.
+
+```kotlin
+import io.amichne.konditional.core.result.ParseResult
+import io.amichne.konditional.serialization.fromJson
+
+fun applyCheckoutUpdate(payload: String) {
+    when (val result = CheckoutFlags.fromJson(payload)) {
+        is ParseResult.Success -> println("Applied checkout update")
+        is ParseResult.Failure -> println("Rejected checkout update: ${result.error.message}")
+    }
+}
+```
+
+Fetch the payload outside the flag evaluation call. If the fetch fails, keep
+serving the current configuration. If decoding fails, `fromJson` returns the
+error and leaves the active checkout rules in place. A successful load replaces
+the namespace snapshot as a unit.
+
+For the payload fields, see the [snapshot JSON format](/reference/snapshot-json-format).
