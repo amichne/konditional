@@ -2,7 +2,8 @@ package io.amichne.konditional.engine
 
 import io.amichne.konditional.api.explain
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
+import io.amichne.konditional.fixtures.TestFacts
+import io.amichne.konditional.fixtures.Platform
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.instance.Configuration
@@ -20,10 +21,10 @@ class EvaluationSnapshotTest {
     fun reloadDuringDeferredRuleKeepsDependencyAndDiagnosticsOnOriginalVersion() {
         val entered = CountDownLatch(1)
         val resume = CountDownLatch(1)
-        val flags = object : Namespace.TestNamespaceFacade("evaluation-snapshot") {
+        val flags = object : Namespace.TestNamespaceFacade("evaluation-snapshot", factSchema = TestFacts.schema) {
             val dependency by integer<Context>(default = 0)
             val composed by integer<Context>(default = 0) {
-                rule { platforms(Platform.IOS) } yields {
+                rule { match(TestFacts.platform.oneOf(Platform.IOS)) } yields {
                     entered.countDown()
                     check(resume.await(10, TimeUnit.SECONDS))
                     dependency()

@@ -3,15 +3,15 @@ title: "Konditional"
 description: "Typed feature flags for Kotlin."
 ---
 
-Should this device see the new checkout? Give the flag a default of `false` and a rule that enables it on iOS. The caller gets a Kotlin `Boolean` it can use directly.
+Should this account see the new checkout? Give the flag a default of `false` and a rule that enables it for pilot accounts. The caller gets a Kotlin `Boolean` it can use directly.
 
 ```kotlin
 val showNewCheckout = CheckoutFlags.newCheckout
-    .evaluate(Device(Platform.IOS))  // true
+    .evaluate(Account(Channel.PILOT))  // true
 ```
 
 <Card title="Add the engine to your project" href="/quickstart/install">
-  Start here with a Kotlin/JVM application. Then declare the checkout flag and run it on two platforms.
+  Start here with a Kotlin/JVM application. Then declare the checkout flag and run it for pilot and general accounts.
 </Card>
 
 Already have the engine? [Run your first flag](/quickstart).

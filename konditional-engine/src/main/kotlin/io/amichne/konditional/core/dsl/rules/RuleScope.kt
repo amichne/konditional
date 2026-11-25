@@ -9,10 +9,7 @@ import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.dsl.KonditionalDsl
 import io.amichne.konditional.core.features.Feature
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
-import io.amichne.konditional.core.dsl.rules.targeting.scopes.LocaleTargetingScope
-import io.amichne.konditional.core.dsl.rules.targeting.scopes.PlatformTargetingScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.StableIdTargetingScope
-import io.amichne.konditional.core.dsl.rules.targeting.scopes.VersionTargetingScope
 
 /**
  * DSL scope for rule configuration.
@@ -24,14 +21,9 @@ import io.amichne.konditional.core.dsl.rules.targeting.scopes.VersionTargetingSc
  * Example usage:
  * ```kotlin
  * rule {
- *     locales(AppLocale.UNITED_STATES, AppLocale.CANADA)
- *     platforms(Platform.IOS, Platform.ANDROID)
- *     versions {
- *         min(1, 2, 0)
- *         max(2, 0, 0)
- *     }
- *     rampUp {  RampUp.create(50.0) }
- *     note("RampUp to mobile users only")
+ *     match(environment.oneOf(PRODUCTION))
+ *     rampUp { 50 }
+ *     note("Gradual rollout")
  * }
  * ```
  *
@@ -40,9 +32,6 @@ import io.amichne.konditional.core.dsl.rules.targeting.scopes.VersionTargetingSc
  */
 @KonditionalDsl
 interface RuleScope<C : Context> : ContextRuleScope<C>,
-                                   LocaleTargetingScope<C>,
-                                   PlatformTargetingScope<C>,
-                                   VersionTargetingScope<C>,
                                    StableIdTargetingScope<C> {
 
     /**
@@ -52,14 +41,14 @@ interface RuleScope<C : Context> : ContextRuleScope<C>,
      * is composed with AND semantics relative to other targeting in this rule
      * (i.e., a leaf in the enclosing [io.amichne.konditional.rules.targeting.Targeting.All]).
      *
-     * Empty blocks are silently ignored — no leaf is appended.
+     * An empty disjunction never matches.
      *
      * Example:
      * ```kotlin
      * rule {
      *     anyOf {
-     *         locales("en", "fr")
-     *         platforms(Platform.IOS)
+     *         match(environment.oneOf(PRODUCTION))
+     *         match(temperature.atMost(celsius(4)))
      *     }
      * } yields value
      * ```

@@ -1,48 +1,41 @@
 package io.amichne.konditional.fixtures
 
-import io.amichne.konditional.context.AppLocale
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
-import io.amichne.konditional.context.Version
-import io.amichne.konditional.context.axis.Axis
-import io.amichne.konditional.context.axis.AxisValue
-import io.amichne.konditional.context.axis.Axes
-import io.amichne.konditional.context.axis.axes
+import io.amichne.konditional.context.fact.FactDomain
+import io.amichne.konditional.context.fact.FactSchema
+import io.amichne.konditional.context.fact.Facts
+import io.amichne.konditional.context.fact.SingleFact
 import io.amichne.konditional.core.id.StableId
 import io.amichne.konditional.core.types.Konstrained
 import io.amichne.kontracts.dsl.of
 import io.amichne.kontracts.dsl.schema
 
-enum class TestEnvironment(
-    override val id: String,
-) : AxisValue<TestEnvironment> {
-    DEV("dev"),
-    PROD("prod"),
-}
+enum class TestEnvironment { DEV, PROD }
+enum class AppLocale { UNITED_STATES, CANADA }
+enum class Platform { IOS, ANDROID }
 
-object TestAxes {
-    val Environment = Axis.of<TestEnvironment>()
+object TestFacts {
+    val environment = SingleFact("environment", FactDomain.enumeration(TestEnvironment.entries) { it.name })
+    val platform = SingleFact("platform", FactDomain.enumeration(Platform.entries) { it.name })
+    val locale = SingleFact("locale", FactDomain.enumeration(AppLocale.entries) { it.name })
+    val schema = FactSchema(environment, platform, locale)
 }
 
 data class TestContext(
-    override val locale: AppLocale = AppLocale.UNITED_STATES,
-    override val platform: Platform = Platform.IOS,
-    override val appVersion: Version = Version.of(1, 0, 0),
+    val locale: AppLocale = AppLocale.UNITED_STATES,
+    val platform: Platform = Platform.IOS,
+    val environment: TestEnvironment = TestEnvironment.DEV,
     override val stableId: StableId = StableId.of("fixture-user"),
-    override val axes: Axes = Axes.EMPTY,
-) : Context,
-    Context.LocaleContext,
-    Context.PlatformContext,
-    Context.VersionContext,
-    Context.StableIdContext
-
-fun productionContext(
-    stableId: String = "fixture-user",
-): TestContext =
-    TestContext(
-        stableId = StableId.of(stableId),
-        axes = axes(TestEnvironment.PROD),
+) : Context.StableIdContext {
+    override val facts = Facts.of(
+        TestFacts.locale.value(locale),
+        TestFacts.platform.value(platform),
+        TestFacts.environment.value(environment),
     )
+}
+
+fun productionContext(stableId: String = "fixture-user"): TestContext =
+    TestContext(stableId = StableId.of(stableId), environment = TestEnvironment.PROD)
 
 data class RetryPolicy(
     val maxAttempts: Int = 3,

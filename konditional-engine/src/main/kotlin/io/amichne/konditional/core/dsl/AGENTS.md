@@ -9,8 +9,6 @@ Top-level DSL surface for defining flags and composing rule sets.
 - `DslSugar.kt`
 - `FlagScope.kt`
 - `KonditionalDsl.kt`
-- `VariantDispatchHost.kt`
-- `VersionRangeScope.kt`
 
 ## Go Deeper
 - `rules/`: Rule-building scopes and deferred-yield mechanics.

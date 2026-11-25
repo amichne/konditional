@@ -3,7 +3,8 @@ package io.amichne.konditional.engine
 import io.amichne.konditional.api.evaluate
 import io.amichne.konditional.api.explain
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.Platform
+import io.amichne.konditional.fixtures.TestFacts
+import io.amichne.konditional.fixtures.Platform
 import io.amichne.konditional.core.FlagDefinition
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.enable
@@ -26,9 +27,9 @@ import java.util.concurrent.atomic.AtomicReference
 class NamespaceRuntimeTest {
     @Test
     fun declaredDefinitionsLoadAutomaticallyAndKillSwitchUsesAtomicSnapshotState() {
-        val namespace = object : Namespace.TestNamespaceFacade("engine-kill-switch") {
+        val namespace = object : Namespace.TestNamespaceFacade("engine-kill-switch", factSchema = TestFacts.schema) {
             val enabled by boolean<Context>(default = false) {
-                enable { platforms(Platform.IOS) }
+                enable { match(TestFacts.platform.oneOf(Platform.IOS)) }
             }
         }
 

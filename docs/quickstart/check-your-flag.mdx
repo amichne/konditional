@@ -1,31 +1,31 @@
 ---
 title: "Check your flag"
-description: "Check both paths through the checkout rule and see why a device got its value."
+description: "Check both paths through the checkout rule and see why an account got its value."
 ---
 
-In [Run your first flag](/quickstart), the iOS device matched the checkout rule and the Android device got the default. With the rule set to `platforms(Platform.IOS)`, replace `main()` in `Checkout.kt` with this version.
+In [Run your first flag](/quickstart), the pilot account matched the checkout rule and the general account got the default. With the rule set to `channel.oneOf(Channel.PILOT)`, replace `main()` in `Checkout.kt` with this version.
 
 ```kotlin
 fun main() {
     val flag = CheckoutFlags.newCheckout
-    check(flag.evaluate(Device(Platform.IOS)))
-    check(!flag.evaluate(Device(Platform.ANDROID)))
+    check(flag.evaluate(Account(Channel.PILOT)))
+    check(!flag.evaluate(Account(Channel.GENERAL)))
     println("Both checkout checks passed")
 }
 ```
 
-Run `main()`. Now change the rule to target Android and run it again. The first check fails because the iOS device gets the default. Restore the iOS rule to make both checks pass.
+Run `main()`. Change the rule to `channel.oneOf(Channel.GENERAL)` and run it again. The first check fails because the pilot account gets the default. Restore `Channel.PILOT` to make both checks pass.
 
 <Accordion title="How do I tell a matching rule from a default?">
   Add `import io.amichne.konditional.api.explain` at the top of the file. Put these lines inside `main()`, before the checks.
 
   ```kotlin
-  val result = flag.explain(Device(Platform.ANDROID))
+  val result = flag.explain(Account(Channel.GENERAL))
   println(result.value)
   println(result.decision)
   ```
 
-  With the iOS rule restored, Android returns `false` with a `Default` decision. Change the device in the call to iOS and you get `true` with a `Rule` decision. [Evaluation diagnostics](/reference/evaluation-diagnostics#decision-branches) describes each outcome.
+  With the pilot rule restored, the general account returns `false` with a `Default` decision. Pass `Account(Channel.PILOT)` and you get `true` with a `Rule` decision. [Evaluation diagnostics](/reference/evaluation-diagnostics#decision-branches) describes each outcome.
 </Accordion>
 
 ## What does your flag need next?

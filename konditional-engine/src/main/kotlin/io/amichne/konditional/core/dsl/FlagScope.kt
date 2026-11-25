@@ -4,6 +4,7 @@ package io.amichne.konditional.core.dsl
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.fact.FactExpression
 import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.rules.ContextRuleScope
 import io.amichne.konditional.core.dsl.rules.NamespaceRuleSet
@@ -24,7 +25,7 @@ import io.amichne.konditional.core.id.StableId
  *     default(true)
  *     salt("v2")
  *     disable  {
- *         platforms(Platform.IOS)
+ *         match(environment.oneOf(PRODUCTION))
  *         rampUp { 50.0 }
  *     }
  * }
@@ -86,8 +87,7 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      * Example:
      * ```kotlin
      * enable  {
-     *     platforms(Platform.IOS)
-     *     locales(AppLocale.UNITED_STATES)
+     *     match(environment.oneOf(PRODUCTION))
      *     rampUp { 50.0 }
      * }
      * ```
@@ -100,11 +100,14 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
         build: RuleScope<C>.() -> Unit = {},
     )
 
+    /** Yields [value] when the facts in the context satisfy [expression]. */
+    fun rule(value: T, expression: FactExpression) = rule(value) { match(expression) }
+
     /**
      * Defines a targeting rule using a composable, context-agnostic scope.
      *
      * This is useful when you want to expose only a subset of targeting mix-ins
-     * (for example, axis-only configuration) while still using the same rule builder.
+     * (for example, fact-only configuration) while still using the same rule builder.
      *
      * @param value The value to return when this rule matches
      * @param build DSL block for configuring the rule's targeting criteria
@@ -121,8 +124,8 @@ interface FlagScope<T : Any, C : Context, out M : Namespace> {
      * This exists as syntactic sugar over [rule] to improve readability for complex values:
      * ```kotlin
      * rule {
-     *     android()
-     * } yields "android"
+     *     match(environment.oneOf(PRODUCTION))
+     * } yields "production"
      * ```
      *
      * Semantics:

@@ -7,8 +7,7 @@ Pure targeting tree used by rule matching and explanation.
 
 ## Local Files
 - `Targeting.kt`
-- `TargetingProjections.kt`
 
 ## Rules
 - Matching and specificity calculations are semantic core logic; keep them deterministic and side-effect free.
-- Projection helpers should remain derivations of the targeting tree, not alternate sources of truth.
+- Rules can use only fact descriptors declared in their namespace.

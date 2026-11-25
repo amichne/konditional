@@ -3,47 +3,27 @@
 package io.amichne.konditional.internal.builders
 
 import io.amichne.konditional.context.Context
-import io.amichne.konditional.context.LocaleTag
-import io.amichne.konditional.context.PlatformTag
-import io.amichne.konditional.context.axis.Axis
-import io.amichne.konditional.context.axis.AxisValue
+import io.amichne.konditional.context.fact.FactExpression
+import io.amichne.konditional.context.fact.anyOf
 import io.amichne.konditional.core.dsl.KonditionalDsl
-import io.amichne.konditional.core.dsl.VariantDispatchHost
-import io.amichne.konditional.core.dsl.VersionRangeScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.AnyOfScope
 import io.amichne.konditional.core.dsl.rules.targeting.scopes.NarrowingTargetingScope
-import io.amichne.konditional.internal.builders.versions.VersionRangeBuilder
 import io.amichne.konditional.rules.targeting.Targeting
 
 /**
  * Internal builder for [Targeting.AnyOf] nodes.
  *
- * Accumulates [Targeting] leaves via the [AnyOfScope] methods; [build] wraps
- * them in a [Targeting.AnyOf] OR-disjunction. An empty block produces an
- * empty [Targeting.AnyOf] which never matches — callers should guard against
- * this before appending to the enclosing [Targeting.All].
+ * Groups of facts form a portable disjunction. Groups with Kotlin predicates execute locally.
  */
 @KonditionalDsl
 @PublishedApi
 @Suppress("OVERRIDE_DEPRECATION")
-internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScope<C>, VariantDispatchHost {
+internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScope<C> {
 
     private val leaves = mutableListOf<Targeting<C>>()
-    private val variantScope = RuleVariantScope<C>(leaves)
 
-    override fun locales(vararg appLocales: LocaleTag) {
-        if (appLocales.isNotEmpty())
-            leaves += Targeting.locale(appLocales.mapTo(linkedSetOf()) { it.id })
-    }
-
-    override fun platforms(vararg ps: PlatformTag) {
-        if (ps.isNotEmpty())
-            leaves += Targeting.platform(ps.mapTo(linkedSetOf()) { it.id })
-    }
-
-    override fun versions(build: VersionRangeScope.() -> Unit) {
-        val range = VersionRangeBuilder().apply(build).build()
-        leaves += Targeting.version(range)
+    override fun match(expression: FactExpression) {
+        leaves += Targeting.Facts(expression)
     }
 
     override fun extension(block: C.() -> Boolean) {
@@ -64,12 +44,12 @@ internal class AnyOfBuilder<C : Context> : AnyOfScope<C>, NarrowingTargetingScop
         )
     }
 
-    override fun <V> onAxisSelection(
-        axis: Axis<V>,
-        values: Set<V>,
-    ) where V : AxisValue<V>, V : Enum<V> {
-        variantScope.onAxisSelection(axis, values)
+    internal fun build(): Targeting<C> {
+        val expressions = leaves.filterIsInstance<Targeting.Facts>().map { it.expression }
+        return if (expressions.size == leaves.size) {
+            Targeting.Facts(anyOf(*expressions.toTypedArray()))
+        } else {
+            Targeting.AnyOf(leaves.toList())
+        }
     }
-
-    internal fun build(): Targeting.AnyOf<C> = Targeting.AnyOf(leaves.toList())
 }

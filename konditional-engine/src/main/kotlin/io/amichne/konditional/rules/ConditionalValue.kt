@@ -6,7 +6,6 @@ import io.amichne.konditional.core.Namespace
 import io.amichne.konditional.core.dsl.rules.RuleValueResolver
 import io.amichne.konditional.core.dsl.rules.RuleValueScope
 import io.amichne.konditional.core.registry.EvaluationSnapshot
-import io.amichne.konditional.internal.SerializedRuleValueType
 
 /**
  * Represents a rule paired with its target value.
@@ -20,7 +19,6 @@ import io.amichne.konditional.internal.SerializedRuleValueType
 data class ConditionalValue<T : Any, C : Context> private constructor(
     val rule: Rule<C>,
     private val resolver: Resolver<T, C>,
-    internal val serializedValueType: SerializedRuleValueType,
 ) {
     /**
      * Returns the static rule value.
@@ -84,16 +82,12 @@ data class ConditionalValue<T : Any, C : Context> private constructor(
 
     companion object {
         internal fun <T : Any, C : Context> Rule<C>.targetedBy(value: T): ConditionalValue<T, C> =
-            ConditionalValue(this, StaticResolver(value), SerializedRuleValueType.STATIC)
+            ConditionalValue(this, StaticResolver(value))
 
         internal fun <T : Any, C : Context> Rule<C>.targetedBy(
             valueResolver: RuleValueResolver<C, T>,
         ): ConditionalValue<T, C> =
-            ConditionalValue(this, ContextualResolver(valueResolver), SerializedRuleValueType.CONTEXTUAL)
+            ConditionalValue(this, ContextualResolver(valueResolver))
 
-        internal fun <T : Any, C : Context> Rule<C>.targetedBySerialized(
-            value: T,
-            type: SerializedRuleValueType,
-        ): ConditionalValue<T, C> = ConditionalValue(this, StaticResolver(value), type)
     }
 }

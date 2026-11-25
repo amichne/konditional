@@ -13,7 +13,6 @@ dependencies {
 
     implementation(libs.moshi)
     implementation(libs.moshi.kotlin)
-    implementation(libs.moshi.adapters)
     implementation(kotlin("reflect"))
 
     testImplementation(kotlin("test"))

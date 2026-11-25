@@ -4,6 +4,7 @@ package io.amichne.konditional.core
 
 import io.amichne.konditional.api.KonditionalInternalApi
 import io.amichne.konditional.context.Context
+import io.amichne.konditional.context.fact.FactSchema
 import io.amichne.konditional.core.dsl.FlagScope
 import io.amichne.konditional.core.features.BooleanFeature
 import io.amichne.konditional.core.features.DoubleFeature
@@ -31,10 +32,14 @@ open class Namespace private constructor(
     @property:KonditionalInternalApi
     val registry: NamespaceRegistry = InMemoryNamespaceRegistry(namespaceId = id.value),
     @PublishedApi internal val identifierSeed: NamespaceId.Seed = id.seed(),
+    val factSchema: FactSchema = FactSchema(),
 ) : NamespaceRegistry by registry {
     constructor() : this(defaultNamespaceId())
 
     constructor(id: String) : this(NamespaceId(id))
+
+    /** Declares the facts available to Kotlin rules and snapshots in this namespace. */
+    constructor(id: String, factSchema: FactSchema) : this(NamespaceId(id), factSchema = factSchema)
 
     private val features = mutableListOf<Feature<*, *, *>>()
     private val declaredDefaults = linkedMapOf<Feature<*, *, *>, Any>()
@@ -109,10 +114,10 @@ open class Namespace private constructor(
     ): D =
         delegateInstance.apply {
             featureFactory(property.name, thisRef).also { feature ->
+                val definition = FlagBuilder(default, feature).apply(configScope).build()
                 featureSetter(feature)
                 (thisRef as Namespace).features += feature
                 thisRef.declaredDefaults[feature] = default
-                val definition = FlagBuilder(default, feature).apply(configScope).build()
                 thisRef.declaredDefinitions[feature] = definition
                 FeatureRegistrationHooks.notifyFeatureDefined(feature)
             }
@@ -257,10 +262,12 @@ open class Namespace private constructor(
         id: String,
         registry: NamespaceRegistry = InMemoryNamespaceRegistry(namespaceId = id),
         identifierSeed: String = UUID.randomUUID().toString(),
+        factSchema: FactSchema = FactSchema(),
     ) : Namespace(
             id = NamespaceId(id),
             registry = registry,
             identifierSeed = NamespaceId.Seed(identifierSeed),
+            factSchema = factSchema,
         ) {
         constructor(id: NamespaceId) : this(id = id.value)
     }

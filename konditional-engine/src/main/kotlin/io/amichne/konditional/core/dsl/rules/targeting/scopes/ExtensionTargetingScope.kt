@@ -11,9 +11,8 @@ interface ExtensionTargetingScope<C : Context> {
     /**
      * Adds a custom targeting extension.
      *
-     * Extensions allow for domain-specific targeting beyond the standard
-     * platform, locale, and version criteria. Internally, each call appends
-     * a [io.amichne.konditional.rules.targeting.Targeting.Custom] leaf.
+     * Use an extension for a Kotlin-only predicate. A snapshot can carry
+     * comparisons over declared facts. It cannot carry this callback.
      *
      * Multiple extension blocks are accumulated and combined with AND semantics.
      * A rule matches only when all extension predicates match.

@@ -2,7 +2,9 @@
 title: "Rules and precedence"
 ---
 
-A rule pairs targeting criteria with a value. Criteria can match a locale, platform, version range, custom axis, or a narrower context type.
+A rule pairs targeting criteria with a value. A typed fact comparison contributes one unit of specificity.
+`allOf` adds its children's scores. `anyOf` takes the highest child score.
+The context determines whether the expression matches. Its score depends only on its structure.
 
 The engine considers rules in descending order of targeting specificity. For each match, the engine checks rollout eligibility. A rule that misses its rollout does not prevent a later rule from matching.
 

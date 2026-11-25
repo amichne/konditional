@@ -35,7 +35,9 @@ internal data class SerializableSnapshot(
         val resolvedFlags = linkedMapOf<Feature<*, *, *>, FlagDefinition<*, *, *>>()
         for (serializableFlag in flags) {
             val pair = serializableFlag.toFlagPair(schema).getOrElse { return parseFailure(it.parseError()) }
-            resolvedFlags[pair.first] = pair.second
+            if (resolvedFlags.put(pair.first, pair.second) != null) {
+                return parseFailure(ParseError.invalidSnapshot("Duplicate feature '${pair.first.id}'"))
+            }
         }
 
         val missingDeclared = schema.entriesInDeterministicOrder.filter { entry ->

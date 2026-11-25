@@ -1,5 +1,6 @@
 package io.amichne.konditional.core.result
 
+import io.amichne.konditional.context.ContextKey
 import io.amichne.konditional.values.FeatureId
 
 /**
@@ -13,6 +14,26 @@ sealed interface ParseError {
      * Human-readable error message.
      */
     val message: String
+
+    /** The external fact ID has no declaration in the selected namespace. */
+    data class UnknownFact(val id: String) : ParseError {
+        override val message: String get() = "Unknown fact '$id'"
+    }
+
+    /** An ordered comparison refers to a declaration that supports only membership. */
+    data class UnorderedFact(val key: ContextKey) : ParseError {
+        override val message: String get() = "Fact '${key.id}' does not declare an order"
+    }
+
+    /** A membership test needs at least one operand. */
+    data class EmptyFactMembership(val key: ContextKey) : ParseError {
+        override val message: String get() = "Membership on '${key.id}' needs at least one operand"
+    }
+
+    /** The named declaration's value domain rejected an external operand. */
+    data class InvalidFactOperand(val key: ContextKey, val cause: ParseError) : ParseError {
+        override val message: String get() = "Invalid operand for fact '${key.id}': ${cause.message}"
+    }
 
     /**
      * Failed to parseUnsafe a hexadecimal identifier.
@@ -29,15 +50,6 @@ sealed interface ParseError {
     @ConsistentCopyVisibility
     data class InvalidRollout internal constructor(
         val value: Double,
-        override val message: String,
-    ) : ParseError
-
-    /**
-     * Failed to parseUnsafe a semantic version string.
-     */
-    @ConsistentCopyVisibility
-    data class InvalidVersion internal constructor(
-        val input: String,
         override val message: String,
     ) : ParseError
 

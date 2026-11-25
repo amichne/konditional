@@ -6,7 +6,7 @@ This file scopes `konditional-engine/src/main/kotlin/io/amichne/konditional/core
 Routing layer for targeting-specific DSL scopes.
 
 ## Go Deeper
-- `scopes/`: Locale, platform, version, axis, stable-id, and custom targeting DSL fragments.
+- `scopes/`: Fact, stable-id, and custom targeting DSL fragments.
 
 ## Rules
 - Keep targeting-specific authoring APIs in the deeper `scopes/` package.

@@ -13,17 +13,7 @@ import io.amichne.konditional.internal.evaluation.EvaluationDiagnostics
 import io.amichne.konditional.rules.ConditionalValue
 import io.amichne.konditional.rules.Rule
 import io.amichne.konditional.rules.targeting.Targeting
-import io.amichne.konditional.rules.targeting.axesOrEmpty
-import io.amichne.konditional.rules.targeting.customLeafCount
-import io.amichne.konditional.rules.targeting.localesOrEmpty
-import io.amichne.konditional.rules.targeting.platformsOrEmpty
-import io.amichne.konditional.rules.targeting.versionRangeOrNull
-import io.amichne.konditional.rules.versions.Unbounded
-import java.security.MessageDigest
 import kotlin.time.measureTimedValue
-
-private const val MINIMUM_ORDINAL = 0
-private const val RULE_ID_HASH_LENGTH = 8
 
 /**
  * Evaluates this feature for the given context.
@@ -128,18 +118,14 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDia
         trace.skippedByRampUp?.toRuleMatch(
             bucket = trace.bucket,
             featureKey = key,
-            namespaceId = snapshot.namespaceId,
             salt = definition.salt,
-            ruleOrdinal = definition.valuesByPrecedence.indexOfFirst { it === trace.skippedByRampUp },
         )
     val decision =
         trace.matched
             ?.toRuleMatch(
                 bucket = trace.bucket,
                 featureKey = key,
-                namespaceId = snapshot.namespaceId,
                 salt = definition.salt,
-                ruleOrdinal = definition.valuesByPrecedence.indexOfFirst { it === trace.matched },
             )?.let { matched ->
                 EvaluationDiagnostics.Decision.Rule(
                     matched = matched,
@@ -162,11 +148,9 @@ private fun <T : Any, C : Context, M : Namespace> Feature<T, C, M>.createRuleDia
 private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
     bucket: Int?,
     featureKey: String,
-    namespaceId: String,
     salt: String,
-    ruleOrdinal: Int,
 ): EvaluationDiagnostics.RuleMatch<EvaluationDiagnostics.RuleExplanation> = bucket?.let { bucket ->
-    rule.toExplanation(ruleId = createRuleId(namespaceId, featureKey, ruleOrdinal)).let {
+    rule.toExplanation().let {
         EvaluationDiagnostics.RuleMatch(
             rule = it,
             bucket = BucketInfo(
@@ -181,80 +165,18 @@ private fun <T : Any, C : Context> ConditionalValue<T, C>.toRuleMatch(
     }
 } ?: error("Bucket must be computed when a rule matches by criteria")
 
-private fun <C : Context> Rule<C>.toExplanation(
-    ruleId: String,
-): EvaluationDiagnostics.RuleExplanation = EvaluationDiagnostics.RuleExplanation(
+private fun Rule<*>.toExplanation(): EvaluationDiagnostics.RuleExplanation = EvaluationDiagnostics.RuleExplanation(
     note = note,
     rollout = rampUp,
-    locales = targeting.localesOrEmpty(),
-    platforms = targeting.platformsOrEmpty(),
-    versionRange = targeting.versionRangeOrNull() ?: Unbounded,
-    axes = targeting.axesOrEmpty(),
-    baseSpecificity = (if (targeting.localesOrEmpty().isNotEmpty()) 1 else 0) +
-        (if (targeting.platformsOrEmpty().isNotEmpty()) 1 else 0) +
-        (if ((targeting.versionRangeOrNull() ?: Unbounded).hasBounds()) 1 else 0) +
-        targeting.axesOrEmpty().size,
-    extensionSpecificity = targeting.customLeafCount(),
-    totalSpecificity = targeting.specificity(),
-    extensionClassName = null,
+    targeting = targeting.toTargetingNode(),
+    totalSpecificity = specificity(),
     ruleId = ruleId,
-    extensionNode = targeting.toExtensionNode(),
-    conditionalContextNode = targeting.toConditionalContextNode(),
 )
 
-private fun createRuleId(namespaceId: String, featureKey: String, ruleOrdinal: Int): String {
-    val digest = MessageDigest.getInstance("SHA-256")
-    val input = "$namespaceId:$featureKey:${ruleOrdinal.coerceAtLeast(MINIMUM_ORDINAL)}"
-    val hash = digest.digest(input.toByteArray(Charsets.UTF_8))
-    val shortHash = hash.take(RULE_ID_HASH_LENGTH).joinToString("") { "%02x".format(it) }
-    return "rule::$namespaceId::$featureKey::$shortHash"
+private fun Targeting<*>.toTargetingNode(): EvaluationDiagnostics.TargetingNode = when (this) {
+    is Targeting.All<*> -> EvaluationDiagnostics.TargetingNode.All(targets.map { it.toTargetingNode() })
+    is Targeting.AnyOf<*> -> EvaluationDiagnostics.TargetingNode.AnyOf(targets.map { it.toTargetingNode() })
+    is Targeting.Facts -> EvaluationDiagnostics.TargetingNode.Facts(expression.spec)
+    is Targeting.Custom<*> -> EvaluationDiagnostics.TargetingNode.Custom
+    is Targeting.Guarded<*, *> -> EvaluationDiagnostics.TargetingNode.Guarded(inner.toTargetingNode())
 }
-
-private fun <C : Context> Targeting.All<C>.toExtensionNode(): EvaluationDiagnostics.ExtensionNode {
-    val hasExtension =
-        targets.any { it is Targeting.Custom<*> || (it is Targeting.Guarded<*, *> && it.inner is Targeting.Custom<*>) }
-    return if (!hasExtension) {
-        EvaluationDiagnostics.ExtensionNode(EvaluationDiagnostics.ExtensionType.NONE)
-    } else {
-        EvaluationDiagnostics.ExtensionNode(
-            type = EvaluationDiagnostics.ExtensionType.LAMBDA,
-            content = toTargetingNode(),
-        )
-    }
-}
-
-private fun <C : Context> Targeting.All<C>.toConditionalContextNode(): EvaluationDiagnostics.ConditionalContextNode {
-    val hasNarrowing = targets.any { it is Targeting.Guarded<*, *> }
-    return if (!hasNarrowing) {
-        EvaluationDiagnostics.ConditionalContextNode(EvaluationDiagnostics.ConditionalContextType.NONE)
-    } else {
-        EvaluationDiagnostics.ConditionalContextNode(
-            type = EvaluationDiagnostics.ConditionalContextType.NARROWING,
-            content = toTargetingNode(),
-        )
-    }
-}
-
-@Suppress("UNCHECKED_CAST")
-private fun <C : Context> Targeting.All<C>.toTargetingNode(): EvaluationDiagnostics.TargetingNode =
-    EvaluationDiagnostics.TargetingNode.All(children = targets.map { (it as Targeting<Context>).toTargetingNode() })
-
-@Suppress("UNCHECKED_CAST")
-
-private fun Targeting<Context>.toTargetingNode(): EvaluationDiagnostics.TargetingNode =
-    when (this) {
-        is Targeting.All<*> -> (this as Targeting.All<Context>).toTargetingNode()
-        is Targeting.AnyOf<*> ->
-            EvaluationDiagnostics.TargetingNode.AnyOf(
-                children = this.targets.map { (it as Targeting<Context>).toTargetingNode() },
-            )
-        is Targeting.Locale -> EvaluationDiagnostics.TargetingNode.Locale(ids = ids)
-        is Targeting.Platform -> EvaluationDiagnostics.TargetingNode.Platform(ids = ids)
-        is Targeting.Version -> EvaluationDiagnostics.TargetingNode.Version(range = range)
-        is Targeting.Axis -> EvaluationDiagnostics.TargetingNode.Axis(axisId = axisId, allowedIds = allowedIds)
-        is Targeting.Custom<*> -> EvaluationDiagnostics.TargetingNode.Custom
-        is Targeting.Guarded<*, *> ->
-            EvaluationDiagnostics.TargetingNode.Guarded(
-                child = (inner as Targeting<Context>).toTargetingNode(),
-            )
-    }
