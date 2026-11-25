@@ -81,10 +81,9 @@ class Axes internal constructor(
 
     override fun iterator(): Iterator<AxisValue<*>> = values.values.flatten().toSet().iterator()
 
-    @Suppress("OVERRIDE_DEPRECATION", "RedundantOverride", "Deprecated")
-    override fun <T> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? {
-        return super.toArray(generator)
-    }
+    /** Copies the axis values into an array of the type supplied by [generator]. */
+    fun <T> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? =
+        ArrayList(this).toArray(generator.apply(0)!!)
 
     companion object {
         /**

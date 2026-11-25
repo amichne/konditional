@@ -2,7 +2,7 @@
 title: "Set up a standalone checkout application"
 ---
 
-Use JDK 27 and the Gradle wrapper from the [Konditional repository](https://github.com/amichne/konditional). The library targets JVM 26.
+Use JDK 17 and the Gradle wrapper from the [Konditional repository](https://github.com/amichne/konditional) to build the local artifacts. Applications can use those artifacts on Java 8 or newer.
 
 ## Install the modules locally
 
@@ -40,11 +40,8 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(27)
-    compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_26)
+    jvmToolchain(17)
 }
-
-tasks.withType<JavaCompile>().configureEach { options.release.set(26) }
 
 dependencies {
     implementation("io.github.amichne:konditional-engine:0.3.7")

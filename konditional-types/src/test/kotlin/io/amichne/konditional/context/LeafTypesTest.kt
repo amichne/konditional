@@ -36,6 +36,17 @@ class LeafTypesTest {
         assertEquals(envAxis, TestEnvironment.STAGE.axis)
         assertEquals(setOf(TestEnvironment.PROD, TestEnvironment.STAGE), values[envAxis])
     }
+
+    @Test
+    fun `axis values retain their order and array type`() {
+        val values = axes(TestEnvironment.PROD, TestEnvironment.STAGE)
+        val result = values.toArray { size ->
+            assertEquals(0, size)
+            arrayOfNulls<TestEnvironment>(size)
+        }
+        assertEquals(TestEnvironment::class.java, result?.javaClass?.componentType)
+        assertEquals(listOf(TestEnvironment.PROD, TestEnvironment.STAGE), result?.toList())
+    }
 }
 
 @KonditionalExplicitId("env")
